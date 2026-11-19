@@ -1012,6 +1012,7 @@
             ctx.restore();
         }
 
+        // Render function: draws 3-layer snow, transparent clouds, platforms, presents, particles, and character
         function render() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -1086,9 +1087,11 @@
                 ctx.restore();
             });
 
-            const activeSprite = (activePowerups.rocketTimer > 0) ? imgBullet : imgMan;
-            const spriteDrawWidth = player.width * 2;
-            const spriteDrawHeight = player.height * 2;
+            const isRocketActive = activePowerups.rocketTimer > 0;
+            const activeSprite = isRocketActive ? imgBullet : imgMan;
+            const spriteScale = isRocketActive ? 2 : 1.5; // 25% smaller than 2x for man.png, 2x for bullet.png
+            const spriteDrawWidth = player.width * spriteScale;
+            const spriteDrawHeight = player.height * spriteScale;
 
             if (activeSprite.complete && activeSprite.naturalWidth !== 0) {
                 ctx.save();
@@ -1098,11 +1101,11 @@
                 ctx.restore();
             } else {
                 ctx.save();
-                ctx.font = '68px serif';
+                ctx.font = `${Math.round(34 * spriteScale)}px serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(
-                    (activePowerups.rocketTimer > 0) ? '🚀' : '🎅',
+                    isRocketActive ? '🚀' : '🎅',
                     player.x + player.width / 2,
                     player.y + player.height / 2
                 );
