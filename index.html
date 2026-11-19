@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Santa Climb</title>
     <!-- Browser Address Bar Icon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎄</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎅</text></svg>">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
-
+    
     <style>
         * {
             user-select: none;
@@ -43,22 +43,20 @@
         .btn-bounce:active {
             transform: scale(0.92);
         }
-        /* Frosty snowball styling for touch movement buttons */
         .snowball-btn {
-            background: radial-gradient(circle at 30% 28%, #ffffff 0%, #f0f9ff 52%, #bae6fd 100%);
-            box-shadow:
-                0 10px 22px rgba(15, 23, 42, 0.28),
-                inset 0 -6px 12px rgba(125, 211, 252, 0.65),
-                inset 0 4px 8px rgba(255, 255, 255, 0.95);
-            transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+            background: radial-gradient(circle at 32% 30%, #ffffff 0%, #f1f5f9 55%, #cbd5e1 100%);
+            box-shadow: 
+                0 10px 24px rgba(15, 23, 42, 0.28),
+                inset -5px -6px 12px rgba(148, 163, 184, 0.55),
+                inset 4px 5px 10px rgba(255, 255, 255, 0.95);
+            border: 3px solid rgba(255, 255, 255, 0.95);
         }
-        .snowball-btn:active,
-        .snowball-btn.is-pressed {
-            transform: scale(0.9);
-            background: radial-gradient(circle at 35% 32%, #ffffff 0%, #e0f2fe 65%, #93c5fd 100%);
-            box-shadow:
-                0 4px 10px rgba(15, 23, 42, 0.24),
-                inset 0 -3px 6px rgba(125, 211, 252, 0.75);
+        .snowball-btn:active {
+            background: radial-gradient(circle at 40% 40%, #f8fafc 0%, #e2e8f0 65%, #94a3b8 100%);
+            box-shadow: 
+                0 4px 12px rgba(15, 23, 42, 0.25),
+                inset -3px -4px 8px rgba(100, 116, 139, 0.6),
+                inset 2px 3px 6px rgba(255, 255, 255, 0.9);
         }
         @keyframes slideIn {
             from { transform: translateY(-100%) translateX(-50%); opacity: 0; }
@@ -73,7 +71,7 @@
 
     <!-- Main Game Container with bg.jpg Background Image -->
     <div id="gameContainer" class="relative w-full h-full max-w-full max-h-full shadow-2xl overflow-hidden rounded-none border-0 flex flex-col bg-cover bg-center" style="background-image: url('bg.jpg');">
-
+        
         <!-- Game Canvas -->
         <canvas id="gameCanvas" class="w-full h-full block bg-transparent relative z-0"></canvas>
 
@@ -86,13 +84,13 @@
                     <span id="scoreText" class="font-game text-xl text-slate-800">0</span>
                 </div>
                 <!-- Combo Badge -->
-                <div id="comboBadge" class="hidden flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white px-3 py-1 rounded-full shadow-lg border border-amber-200 animate-pulse">
+                <div id="comboBadge" class="hidden flex items-center gap-1.5 bg-gradient-to-r from-red-500 to-rose-600 text-white px-3 py-1 rounded-full shadow-lg border border-red-200 animate-pulse">
                     <i class="fa-solid fa-bolt text-xs"></i>
                     <span id="comboText" class="font-game text-sm tracking-wide">2x COMBO</span>
                 </div>
             </div>
 
-            <!-- Right Side: Presents & Power-up Status -->
+            <!-- Right Side: Presents & Power-up Status & Controls Toggle -->
             <div class="flex flex-col items-end gap-2">
                 <div class="flex items-center gap-2 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-2xl shadow-md border border-white pointer-events-auto">
                     <i class="fa-solid fa-gift text-red-500 text-lg animate-bounce"></i>
@@ -116,23 +114,23 @@
 
         <!-- Toast Notification -->
         <div id="toast" class="hidden absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white px-4 py-2 rounded-2xl shadow-2xl border border-sky-400/50 flex items-center gap-3 toast-anim pointer-events-none">
-            <div id="toastIcon" class="text-amber-400 text-lg"><i class="fa-solid fa-award"></i></div>
+            <div id="toastIcon" class="text-red-400 text-lg"><i class="fa-solid fa-award"></i></div>
             <div id="toastMsg" class="font-game text-xs tracking-wide">Achievement Unlocked!</div>
         </div>
 
         <!-- START SCREEN OVERLAY -->
-        <div id="startOverlay" class="absolute inset-0 bg-sky-900/30 backdrop-blur-[2px] z-30 flex flex-col justify-between p-6 pb-12 overflow-y-auto">
+        <div id="startOverlay" class="absolute inset-0 bg-sky-950/30 backdrop-blur-[2px] z-30 flex flex-col justify-between p-6 pb-12 overflow-y-auto">
             <div class="text-center mt-6">
-                <div class="inline-block bg-white/90 backdrop-blur-md px-6 py-3 rounded-3xl shadow-xl border-2 border-sky-200 mb-2">
-                    <h1 class="font-game text-4xl sm:text-5xl text-sky-600 tracking-wider drop-shadow-sm">SANTA CLIMB</h1>
-                    <p class="text-xs font-bold text-sky-500 uppercase tracking-widest mt-0.5">Presents & Snow Edition</p>
+                <div class="inline-block bg-white/90 backdrop-blur-md px-6 py-3 rounded-3xl shadow-xl border-2 border-red-200 mb-2">
+                    <h1 class="font-game text-4xl sm:text-5xl text-red-600 tracking-wider drop-shadow-sm">SANTA CLIMB</h1>
+                    <p class="text-xs font-bold text-emerald-600 uppercase tracking-widest mt-0.5">Presents & Snow Edition</p>
                 </div>
             </div>
 
             <!-- Character Preview Box -->
             <div class="my-auto flex flex-col items-center justify-center gap-3">
                 <div class="relative w-32 h-32 bg-white/60 backdrop-blur-md rounded-full flex items-center justify-center shadow-inner border-4 border-white/80 overflow-hidden">
-                    <img src="man.png" alt="Character" onerror="this.onerror=null; this.src='https://placehold.co/100x100/38bdf8/ffffff?text=🎅';" class="h-24 w-auto object-contain transform hover:scale-110 transition duration-300">
+                    <img src="man.png" alt="Santa" onerror="this.onerror=null; this.src='https://placehold.co/100x100/ef4444/ffffff?text=🎅';" class="h-24 w-auto object-contain transform hover:scale-110 transition duration-300">
                     <div id="shieldPreview" class="hidden absolute inset-0 border-4 border-cyan-400 rounded-full animate-ping opacity-75"></div>
                 </div>
 
@@ -151,16 +149,16 @@
 
             <!-- Action Buttons Grid -->
             <div class="flex flex-col gap-3 mb-4 w-full max-w-sm mx-auto">
-                <button onclick="startGame()" class="btn-bounce w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-game text-2xl py-4 rounded-2xl shadow-lg border-2 border-emerald-300 flex items-center justify-center gap-3">
+                <button onclick="startGame()" class="btn-bounce w-full bg-gradient-to-r from-red-500 to-emerald-600 hover:from-red-600 hover:to-emerald-700 text-white font-game text-2xl py-4 rounded-2xl shadow-lg border-2 border-white/60 flex items-center justify-center gap-3">
                     <i class="fa-solid fa-play"></i> PLAY NOW
                 </button>
-
+                
                 <div class="grid grid-cols-2 gap-3">
                     <button onclick="openModal('shopModal')" class="btn-bounce bg-white/90 hover:bg-white text-slate-700 font-game py-3 rounded-2xl shadow border border-white flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-store text-amber-500"></i> SHOP
+                        <i class="fa-solid fa-store text-red-500"></i> SHOP
                     </button>
                     <button onclick="openModal('missionsModal')" class="btn-bounce bg-white/90 hover:bg-white text-slate-700 font-game py-3 rounded-2xl shadow border border-white flex items-center justify-center gap-2 relative">
-                        <i class="fa-solid fa-list-check text-indigo-500"></i> TASKS
+                        <i class="fa-solid fa-list-check text-emerald-600"></i> TASKS
                     </button>
                 </div>
             </div>
@@ -172,7 +170,7 @@
                 <h2 class="font-game text-3xl text-slate-800 mb-6">GAME PAUSED</h2>
                 <div class="flex flex-col gap-3 w-full">
                     <button onclick="togglePause()" class="btn-bounce bg-emerald-500 text-white font-game py-3 rounded-2xl shadow-lg">RESUME</button>
-                    <button onclick="openModal('shopModal')" class="btn-bounce bg-amber-500 text-white font-game py-3 rounded-2xl shadow-lg">POWER-UP SHOP</button>
+                    <button onclick="openModal('shopModal')" class="btn-bounce bg-red-500 text-white font-game py-3 rounded-2xl shadow-lg">POWER-UP SHOP</button>
                     <button onclick="restartGame()" class="btn-bounce bg-slate-200 text-slate-700 font-game py-3 rounded-2xl">RESTART</button>
                     <button onclick="exitToMenu()" class="btn-bounce bg-red-100 text-red-500 font-game py-3 rounded-2xl">MAIN MENU</button>
                 </div>
@@ -183,7 +181,7 @@
         <div id="gameOverOverlay" class="hidden absolute inset-0 bg-slate-900/75 backdrop-blur-md z-40 flex flex-col items-center justify-center p-6">
             <div class="glass-panel w-full max-w-xs sm:max-w-sm rounded-3xl p-6 flex flex-col items-center text-center relative overflow-hidden">
                 <div class="font-game text-3xl text-red-500 mb-1">GAME OVER</div>
-                <p class="text-xs text-slate-500 font-bold mb-4">YOU FELL FROM THE CLOUDS!</p>
+                <p class="text-xs text-slate-500 font-bold mb-4">SANTA FELL FROM THE SNOWY CLOUDS!</p>
 
                 <!-- Score Summary Box -->
                 <div class="w-full bg-slate-100/80 rounded-2xl p-4 mb-4 flex flex-col gap-2">
@@ -197,19 +195,19 @@
                     </div>
                     <div class="flex justify-between items-center text-sm border-t border-slate-200 pt-2">
                         <span class="text-slate-500 font-bold">Max Combo</span>
-                        <span id="goCombo" class="font-game text-sm text-indigo-500">1x</span>
+                        <span id="goCombo" class="font-game text-sm text-emerald-600">1x</span>
                     </div>
                 </div>
 
                 <!-- Continue Incentive Button -->
                 <div id="continueContainer" class="w-full mb-3">
-                    <button id="continueBtn" onclick="buyContinue()" class="btn-bounce w-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-game py-3 px-4 rounded-2xl shadow-md border border-amber-300 flex items-center justify-between">
+                    <button id="continueBtn" onclick="buyContinue()" class="btn-bounce w-full bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-game py-3 px-4 rounded-2xl shadow-md border border-red-300 flex items-center justify-between">
                         <span class="flex items-center gap-2">
                             <i class="fa-solid fa-heart text-red-200 text-lg"></i>
                             <span>CONTINUE?</span>
                         </span>
                         <span class="bg-black/20 px-3 py-1 rounded-xl text-sm flex items-center gap-1">
-                            <i class="fa-solid fa-gift text-red-200"></i>
+                            <i class="fa-solid fa-gift text-amber-200"></i>
                             <span id="continueCostText">50</span>
                         </span>
                     </button>
@@ -228,14 +226,14 @@
             <div class="glass-panel w-full max-w-lg mx-auto h-full rounded-3xl p-5 pb-8 flex flex-col justify-between overflow-hidden">
                 <div class="flex justify-between items-center pb-3 border-b border-slate-200">
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-store text-amber-500 text-xl"></i>
-                        <h2 class="font-game text-2xl text-slate-800">POWER-UP SHOP</h2>
+                        <i class="fa-solid fa-store text-red-500 text-xl"></i>
+                        <h2 class="font-game text-2xl text-slate-800">SANTA'S SHOP</h2>
                     </div>
                     <button onclick="closeModal('shopModal')" class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold">✕</button>
                 </div>
 
-                <div class="bg-amber-100/80 my-3 px-4 py-2 rounded-2xl border border-amber-200 flex justify-between items-center">
-                    <span class="text-xs font-bold text-amber-800 uppercase">Your Balance</span>
+                <div class="bg-red-50 my-3 px-4 py-2 rounded-2xl border border-red-200 flex justify-between items-center">
+                    <span class="text-xs font-bold text-red-800 uppercase">Your Presents</span>
                     <div class="flex items-center gap-1.5 font-game text-lg text-red-600">
                         <i class="fa-solid fa-gift"></i>
                         <span id="shopStarBalance">0</span>
@@ -255,14 +253,14 @@
             <div class="glass-panel w-full max-w-lg mx-auto h-full rounded-3xl p-5 pb-8 flex flex-col justify-between overflow-hidden">
                 <div class="flex justify-between items-center pb-3 border-b border-slate-200">
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-trophy text-indigo-500 text-xl"></i>
+                        <i class="fa-solid fa-trophy text-emerald-600 text-xl"></i>
                         <h2 class="font-game text-2xl text-slate-800">TASKS & GOALS</h2>
                     </div>
                     <button onclick="closeModal('missionsModal')" class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold">✕</button>
                 </div>
 
                 <div class="flex gap-2 my-3">
-                    <button id="tabMissionsBtn" onclick="switchTaskTab('missions')" class="flex-1 py-2 font-game text-xs rounded-xl bg-indigo-500 text-white shadow">DAILY MISSIONS</button>
+                    <button id="tabMissionsBtn" onclick="switchTaskTab('missions')" class="flex-1 py-2 font-game text-xs rounded-xl bg-emerald-600 text-white shadow">DAILY MISSIONS</button>
                     <button id="tabAchievementsBtn" onclick="switchTaskTab('achievements')" class="flex-1 py-2 font-game text-xs rounded-xl bg-slate-200 text-slate-600">ACHIEVEMENTS</button>
                 </div>
 
@@ -275,11 +273,11 @@
         </div>
 
         <!-- SNOWBALL TOUCH CONTROLS OVERLAY -->
-        <div id="touchControls" class="absolute bottom-20 left-0 right-0 px-6 sm:px-12 flex justify-between items-center pointer-events-none z-20" style="bottom: calc(5rem + env(safe-area-inset-bottom, 0px));">
-            <button id="leftTouchBtn" aria-label="Move Left" class="snowball-btn pointer-events-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white/95 flex items-center justify-center text-sky-900 text-3xl sm:text-4xl">
+        <div id="touchControls" class="absolute bottom-20 left-0 right-0 px-5 sm:px-10 flex justify-between pointer-events-none z-20" style="bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));">
+            <button id="leftTouchBtn" aria-label="Move Left" class="snowball-btn pointer-events-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center text-slate-700 text-3xl sm:text-4xl transition-transform duration-100 active:scale-90">
                 <i class="fa-solid fa-arrow-left drop-shadow-sm"></i>
             </button>
-            <button id="rightTouchBtn" aria-label="Move Right" class="snowball-btn pointer-events-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white/95 flex items-center justify-center text-sky-900 text-3xl sm:text-4xl">
+            <button id="rightTouchBtn" aria-label="Move Right" class="snowball-btn pointer-events-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center text-slate-700 text-3xl sm:text-4xl transition-transform duration-100 active:scale-90">
                 <i class="fa-solid fa-arrow-right drop-shadow-sm"></i>
             </button>
         </div>
@@ -294,19 +292,15 @@
         let rocketSynth = null;
         let rocketGain = null;
         let animFrameId = null;
+        let pauseStartTime = null;
 
         function initAudio() {
-            try {
-                if (!audioCtx) {
-                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                    if (AudioContextClass) {
-                        audioCtx = new AudioContextClass();
-                    }
-                }
-                if (audioCtx && audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
-            } catch (e) {}
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
         }
 
         function playCoinSound() {
@@ -330,7 +324,7 @@
 
                 osc.start(now);
                 osc.stop(now + 0.35);
-            } catch (e) {}
+            } catch(e) {}
         }
 
         function playBounceSound() {
@@ -354,7 +348,7 @@
 
                 osc.start(now);
                 osc.stop(now + 0.15);
-            } catch (e) {}
+            } catch(e) {}
         }
 
         function updateRocketSound(isRocketActive) {
@@ -382,13 +376,15 @@
 
                         rocketSynth.start();
                     }
-                } else if (rocketSynth) {
-                    try { rocketSynth.stop(); } catch (e) {}
-                    try { rocketSynth.disconnect(); } catch (e) {}
-                    rocketSynth = null;
-                    rocketGain = null;
+                } else {
+                    if (rocketSynth) {
+                        try { rocketSynth.stop(); } catch(e){}
+                        try { rocketSynth.disconnect(); } catch(e){}
+                        rocketSynth = null;
+                        rocketGain = null;
+                    }
                 }
-            } catch (e) {}
+            } catch(e) {}
         }
 
         let userProgress = {
@@ -401,9 +397,9 @@
                 { id: 'm3', title: 'Achieve a 5x Combo', req: 5, current: 0, reward: 25, done: false, type: 'combo' }
             ],
             achievements: [
-                { id: 'a1', title: 'Sky High', desc: 'Reach a score of 100', req: 100, current: 0, reward: 50, unlocked: false, type: 'score' },
-                { id: 'a2', title: 'Present Collector', desc: 'Collect 100 total presents', req: 100, current: 0, reward: 100, unlocked: false, type: 'totalStars' },
-                { id: 'a3', title: 'Power-up Collector', desc: 'Unlock any powerup in shop', req: 1, current: 0, reward: 40, unlocked: false, type: 'powerupUnlocked' }
+                { id: 'a1', title: 'North Pole Peak', desc: 'Reach a score of 100', req: 100, current: 0, reward: 50, unlocked: false, type: 'score' },
+                { id: 'a2', title: 'Gift Wrapper', desc: 'Collect 100 total presents', req: 100, current: 0, reward: 100, unlocked: false, type: 'totalStars' },
+                { id: 'a3', title: 'Sleigh Upgraded', desc: 'Unlock any powerup in shop', req: 1, current: 0, reward: 40, unlocked: false, type: 'powerupUnlocked' }
             ]
         };
 
@@ -412,38 +408,34 @@
                 const saved = localStorage.getItem(STORAGE_KEY);
                 if (saved) {
                     const parsed = JSON.parse(saved);
-                    userProgress = {
-                        ...userProgress,
-                        ...parsed,
-                        upgrades: { ...userProgress.upgrades, ...(parsed.upgrades || {}) },
-                        missions: Array.isArray(parsed.missions) ? parsed.missions : userProgress.missions,
-                        achievements: Array.isArray(parsed.achievements) ? parsed.achievements : userProgress.achievements
-                    };
+                    userProgress = { ...userProgress, ...parsed };
                 }
-            } catch (e) {}
+            } catch(e){}
             updateMenuUI();
         }
 
         function saveData() {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(userProgress));
-            } catch (e) {}
+            } catch(e){}
             updateMenuUI();
         }
 
         const POWERUPS_CONFIG = {
-            magnet: { name: 'Present Magnet', icon: 'fa-magnet', bgColor: 'bg-red-500', costs: [50, 100, 200], durations: [600, 900, 1200], desc: 'Attracts nearby wrapped presents automatically.' },
-            shield: { name: 'Cloud Shield', icon: 'fa-shield-halved', bgColor: 'bg-cyan-500', costs: [60, 120, 250], durations: [1, 1, 2], desc: 'Protects you from falling once or twice.' },
-            spring: { name: 'Super Boots', icon: 'fa-shoe-prints', bgColor: 'bg-emerald-500', costs: [40, 80, 150], durations: [1, 2, 3], desc: 'Allows mid-air double jumps!' },
-            rocket: { name: 'Holiday Tree Boost', icon: 'fa-tree', bgColor: 'bg-amber-500', costs: [100, 200, 400], durations: [180, 270, 360], desc: 'Blasts you high into the snowy sky safely.' }
+            magnet: { name: 'Present Magnet', icon: 'fa-magnet', bgColor: 'bg-red-500', costs: [50, 100, 200], durations: [600, 900, 1200], desc: 'Attracts nearby Christmas presents automatically.' },
+            shield: { name: 'Frost Shield', icon: 'fa-shield-halved', bgColor: 'bg-cyan-500', costs: [60, 120, 250], durations: [1, 1, 2], desc: 'Protects Santa from falling once or twice.' },
+            spring: { name: 'Elf Boots', icon: 'fa-shoe-prints', bgColor: 'bg-emerald-500', costs: [40, 80, 150], durations: [1, 2, 3], desc: 'Allows mid-air double jumps!' },
+            rocket: { name: 'Christmas Tree Boost', icon: 'fa-tree', imgSrc: 'tree.png', bgColor: 'bg-emerald-600', costs: [100, 200, 400], durations: [180, 270, 360], desc: 'Blasts Santa high into the winter sky safely.' }
         };
 
-        const PRESENT_PALETTES = [
-            { boxRgb: [239, 68, 68], ribbonRgb: [253, 224, 71], bowRgb: [254, 240, 138], box: '#ef4444' },
-            { boxRgb: [16, 185, 129], ribbonRgb: [239, 68, 68], bowRgb: [252, 165, 165], box: '#10b981' },
-            { boxRgb: [59, 130, 246], ribbonRgb: [250, 204, 21], bowRgb: [254, 240, 138], box: '#3b82f6' },
-            { boxRgb: [168, 85, 247], ribbonRgb: [255, 255, 255], bowRgb: [241, 245, 249], box: '#a855f7' },
-            { boxRgb: [249, 115, 22], ribbonRgb: [254, 240, 138], bowRgb: [253, 224, 71], box: '#f97316' }
+        // Christmas Present Color Themes with 3D Shading Palette
+        const PRESENT_STYLES = [
+            { top: '#f87171', left: '#ef4444', right: '#b91c1c', stroke: '#7f1d1d', ribbon: '#fde047', ribbonDark: '#eab308' }, // Festive Red + Gold
+            { top: '#34d399', left: '#10b981', right: '#047857', stroke: '#064e3b', ribbon: '#f87171', ribbonDark: '#dc2626' }, // Pine Green + Red
+            { top: '#60a5fa', left: '#3b82f6', right: '#1d4ed8', stroke: '#1e3a8a', ribbon: '#f8fafc', ribbonDark: '#cbd5e1' }, // Ice Blue + Silver
+            { top: '#f472b6', left: '#ec4899', right: '#be185d', stroke: '#831843', ribbon: '#fef08a', ribbonDark: '#facc15' }, // Candy Pink + Cream
+            { top: '#fbbf24', left: '#f59e0b', right: '#b45309', stroke: '#78350f', ribbon: '#ef4444', ribbonDark: '#b91c1c' }, // Warm Gold + Crimson
+            { top: '#c084fc', left: '#a855f7', right: '#7e22ce', stroke: '#581c87', ribbon: '#67e8f9', ribbonDark: '#06b6d4' }  // Sugar Plum + Cyan
         ];
 
         const canvas = document.getElementById('gameCanvas');
@@ -483,372 +475,9 @@
         let powerupItems = [];
         let particles = [];
         let clouds = [];
-        let snowLayers = { far: [], mid: [], near: [] };
+        let snowLayers = [];
 
         const keys = { left: false, right: false };
-
-        function stopAnimationLoop() {
-            if (animFrameId !== null) {
-                cancelAnimationFrame(animFrameId);
-                animFrameId = null;
-            }
-        }
-
-        function startAnimationLoop() {
-            stopAnimationLoop();
-            animFrameId = requestAnimationFrame(render);
-        }
-
-        function initSnowLayers() {
-            const w = Math.max(canvas.width, 320);
-            const h = Math.max(canvas.height, 480);
-
-            snowLayers.far = Array.from({ length: 42 }, () => ({
-                x: Math.random() * w,
-                y: Math.random() * h,
-                radius: 1.2 + Math.random() * 0.9,
-                vy: 0.45 + Math.random() * 0.4,
-                drift: (Math.random() - 0.5) * 0.25,
-                phase: Math.random() * Math.PI * 2,
-                alpha: 0.55
-            }));
-
-            snowLayers.mid = Array.from({ length: 28 }, () => ({
-                x: Math.random() * w,
-                y: Math.random() * h,
-                radius: 2.6 + Math.random() * 1.4,
-                vy: 1.15 + Math.random() * 0.75,
-                drift: (Math.random() - 0.5) * 0.6,
-                phase: Math.random() * Math.PI * 2,
-                alpha: 0.8
-            }));
-
-            snowLayers.near = Array.from({ length: 16 }, () => ({
-                x: Math.random() * w,
-                y: Math.random() * h,
-                radius: 5.0 + Math.random() * 2.5,
-                vy: 2.3 + Math.random() * 1.2,
-                drift: (Math.random() - 0.5) * 1.1,
-                phase: Math.random() * Math.PI * 2,
-                alpha: 0.95
-            }));
-        }
-
-        function updateSnowFlakes(flakes, w, h) {
-            flakes.forEach(f => {
-                f.phase += 0.025;
-                f.x += f.drift + Math.sin(f.phase) * 0.35;
-                f.y += f.vy;
-
-                if (f.y > h + f.radius * 2) {
-                    f.y = -f.radius * 2;
-                    f.x = Math.random() * w;
-                }
-                if (f.x > w + f.radius * 2) {
-                    f.x = -f.radius * 2;
-                } else if (f.x < -f.radius * 2) {
-                    f.x = w + f.radius * 2;
-                }
-            });
-        }
-
-        function drawSnowFlakes(flakes) {
-            flakes.forEach(f => {
-                ctx.save();
-                ctx.globalAlpha = f.alpha;
-                ctx.fillStyle = '#ffffff';
-                ctx.beginPath();
-                ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
-            });
-        }
-
-        // Shade RGB color array according to directional light factor
-        function shadeRgb(rgb, lightFactor) {
-            const r = Math.max(0, Math.min(255, Math.round(rgb[0] * lightFactor)));
-            const g = Math.max(0, Math.min(255, Math.round(rgb[1] * lightFactor)));
-            const b = Math.max(0, Math.min(255, Math.round(rgb[2] * lightFactor)));
-            return `rgb(${r}, ${g}, ${b})`;
-        }
-
-        // Project a 3D point (x, y, z) rotated around Y-axis (angleY) and tilted around X-axis (tiltX)
-        function project3DPoint(px, py, pz, cosY, sinY, cosX, sinX, fov) {
-            // Rotate around Y-axis
-            const x1 = px * cosY + pz * sinY;
-            const z1 = -px * sinY + pz * cosY;
-            // Tilt around X-axis so top lid is clearly visible in 3D space
-            const y2 = py * cosX - z1 * sinX;
-            const z2 = py * sinX + z1 * cosX;
-
-            const scale = fov / (fov + z2);
-            return {
-                x: x1 * scale,
-                y: y2 * scale,
-                z: z2
-            };
-        }
-
-        function drawPolygon2D(pts, fillStyle, strokeStyle, lineWidth) {
-            ctx.beginPath();
-            ctx.moveTo(pts[0].x, pts[0].y);
-            for (let i = 1; i < pts.length; i++) {
-                ctx.lineTo(pts[i].x, pts[i].y);
-            }
-            ctx.closePath();
-            if (fillStyle) {
-                ctx.fillStyle = fillStyle;
-                ctx.fill();
-            }
-            if (strokeStyle) {
-                ctx.strokeStyle = strokeStyle;
-                ctx.lineWidth = lineWidth || 1;
-                ctx.stroke();
-            }
-        }
-
-        // Render a genuine rotating 3D rectangular prism present with dynamic face lighting, ribbons, and 3D bow
-        function draw3DPresent(present) {
-            const palette = present.palette || PRESENT_PALETTES[0];
-            const cx = present.x + present.width / 2;
-            const cy = present.y + present.height / 2 + Math.sin(present.bobPhase || 0) * 1.8;
-
-            const angleY = present.rotation || 0;
-            const tiltX = 0.42 + Math.sin(angleY * 2) * 0.06; // Subtle dynamic X-tilt as it spins
-
-            const cosY = Math.cos(angleY);
-            const sinY = Math.sin(angleY);
-            const cosX = Math.cos(tiltX);
-            const sinX = Math.sin(tiltX);
-            const fov = 95;
-
-            // Half-dimensions of the 3D gift box
-            const hw = 10.5;
-            const hh = 9.0;
-            const hd = 10.5;
-            const rw = 2.4; // Half-width of wrapping ribbon
-
-            // Define 8 box vertices in local 3D coordinates (Y-down screen convention)
-            // Top vertices: y = -hh, Bottom vertices: y = +hh
-            const boxVerts3D = [
-                { x: -hw, y: -hh, z: -hd }, // 0: top-left-front
-                { x:  hw, y: -hh, z: -hd }, // 1: top-right-front
-                { x:  hw, y: -hh, z:  hd }, // 2: top-right-back
-                { x: -hw, y: -hh, z:  hd }, // 3: top-left-back
-                { x: -hw, y:  hh, z: -hd }, // 4: bottom-left-front
-                { x:  hw, y:  hh, z: -hd }, // 5: bottom-right-front
-                { x:  hw, y:  hh, z:  hd }, // 6: bottom-right-back
-                { x: -hw, y:  hh, z:  hd }  // 7: bottom-left-back
-            ];
-
-            const projVerts = boxVerts3D.map(v => project3DPoint(v.x, v.y, v.z, cosY, sinY, cosX, sinX, fov));
-
-            // Directional light vector (from upper-left-front)
-            const lightDir = { x: -0.45, y: -0.72, z: -0.52 };
-
-            // Faces of the 3D prism with outward normals and ribbon specifications
-            const faces = [
-                {
-                    name: 'front',
-                    indices: [0, 1, 5, 4],
-                    normal: { x: 0, y: 0, z: -1 },
-                    ribbonAxis: 'vertical'
-                },
-                {
-                    name: 'right',
-                    indices: [1, 2, 6, 5],
-                    normal: { x: 1, y: 0, z: 0 },
-                    ribbonAxis: 'vertical'
-                },
-                {
-                    name: 'back',
-                    indices: [2, 3, 7, 6],
-                    normal: { x: 0, y: 0, z: 1 },
-                    ribbonAxis: 'vertical'
-                },
-                {
-                    name: 'left',
-                    indices: [3, 0, 4, 7],
-                    normal: { x: -1, y: 0, z: 0 },
-                    ribbonAxis: 'vertical'
-                },
-                {
-                    name: 'top',
-                    indices: [3, 2, 1, 0],
-                    normal: { x: 0, y: -1, z: 0 },
-                    ribbonAxis: 'cross'
-                },
-                {
-                    name: 'bottom',
-                    indices: [4, 5, 6, 7],
-                    normal: { x: 0, y: 1, z: 0 },
-                    ribbonAxis: 'cross'
-                }
-            ];
-
-            // Transform normals to camera space for backface culling & directional shading
-            const visibleFaces = [];
-            faces.forEach(face => {
-                const nx1 = face.normal.x * cosY + face.normal.z * sinY;
-                const nz1 = -face.normal.x * sinY + face.normal.z * cosY;
-                const ny2 = face.normal.y * cosX - nz1 * sinX;
-                const nz2 = face.normal.y * sinX + nz1 * cosX;
-
-                // Camera looks along +Z, so faces with nz2 < 0 point toward camera
-                if (nz2 < 0.05) {
-                    const dot = nx1 * lightDir.x + ny2 * lightDir.y + nz2 * lightDir.z;
-                    const shade = Math.max(0.58, Math.min(1.22, 0.85 + dot * 0.42));
-                    const avgZ = face.indices.reduce((sum, idx) => sum + projVerts[idx].z, 0) / 4;
-                    visibleFaces.push({
-                        ...face,
-                        shade,
-                        avgZ,
-                        pts: face.indices.map(idx => projVerts[idx])
-                    });
-                }
-            });
-
-            // Painter's algorithm: sort farthest to nearest
-            visibleFaces.sort((a, b) => b.avgZ - a.avgZ);
-
-            ctx.save();
-            ctx.translate(cx, cy);
-
-            // Subtle soft drop shadow beneath floating 3D present
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.16)';
-            ctx.beginPath();
-            ctx.ellipse(0, hh + 5.5, 10, 3.2, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Draw each visible 3D face + its wrapping ribbon strips
-            visibleFaces.forEach(face => {
-                const boxFill = shadeRgb(palette.boxRgb, face.shade);
-                const edgeStroke = shadeRgb(palette.boxRgb, face.shade * 0.62);
-                drawPolygon2D(face.pts, boxFill, edgeStroke, 1.1);
-
-                const ribbonFill = shadeRgb(palette.ribbonRgb, face.shade);
-                const ribbonStroke = shadeRgb(palette.ribbonRgb, face.shade * 0.78);
-
-                if (face.ribbonAxis === 'vertical') {
-                    // Vertical ribbon band centered on side face
-                    let rVerts3D = [];
-                    if (face.name === 'front') {
-                        rVerts3D = [
-                            { x: -rw, y: -hh, z: -hd },
-                            { x:  rw, y: -hh, z: -hd },
-                            { x:  rw, y:  hh, z: -hd },
-                            { x: -rw, y:  hh, z: -hd }
-                        ];
-                    } else if (face.name === 'back') {
-                        rVerts3D = [
-                            { x:  rw, y: -hh, z: hd },
-                            { x: -rw, y: -hh, z: hd },
-                            { x: -rw, y:  hh, z: hd },
-                            { x:  rw, y:  hh, z: hd }
-                        ];
-                    } else if (face.name === 'right') {
-                        rVerts3D = [
-                            { x: hw, y: -hh, z: -rw },
-                            { x: hw, y: -hh, z:  rw },
-                            { x: hw, y:  hh, z:  rw },
-                            { x: hw, y:  hh, z: -rw }
-                        ];
-                    } else if (face.name === 'left') {
-                        rVerts3D = [
-                            { x: -hw, y: -hh, z:  rw },
-                            { x: -hw, y: -hh, z: -rw },
-                            { x: -hw, y:  hh, z: -rw },
-                            { x: -hw, y:  hh, z:  rw }
-                        ];
-                    }
-                    const rProj = rVerts3D.map(v => project3DPoint(v.x, v.y, v.z, cosY, sinY, cosX, sinX, fov));
-                    drawPolygon2D(rProj, ribbonFill, ribbonStroke, 0.7);
-                } else if (face.ribbonAxis === 'cross') {
-                    const yPlane = face.name === 'top' ? -hh : hh;
-                    // Strip along Z axis
-                    const stripZ = [
-                        { x: -rw, y: yPlane, z:  hd },
-                        { x:  rw, y: yPlane, z:  hd },
-                        { x:  rw, y: yPlane, z: -hd },
-                        { x: -rw, y: yPlane, z: -hd }
-                    ].map(v => project3DPoint(v.x, v.y, v.z, cosY, sinY, cosX, sinX, fov));
-
-                    // Strip along X axis
-                    const stripX = [
-                        { x: -hw, y: yPlane, z:  rw },
-                        { x:  hw, y: yPlane, z:  rw },
-                        { x:  hw, y: yPlane, z: -rw },
-                        { x: -hw, y: yPlane, z: -rw }
-                    ].map(v => project3DPoint(v.x, v.y, v.z, cosY, sinY, cosX, sinX, fov));
-
-                    drawPolygon2D(stripZ, ribbonFill, ribbonStroke, 0.6);
-                    drawPolygon2D(stripX, ribbonFill, ribbonStroke, 0.6);
-                }
-
-                // Specular rim highlight on top lid edge
-                if (face.name === 'top') {
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
-                    ctx.lineWidth = 1.1;
-                    ctx.beginPath();
-                    ctx.moveTo(face.pts[0].x, face.pts[0].y);
-                    ctx.lineTo(face.pts[1].x, face.pts[1].y);
-                    ctx.lineTo(face.pts[2].x, face.pts[2].y);
-                    ctx.stroke();
-                }
-            });
-
-            // 3D Ribbon Bow on top center (y = -hh) that rotates with the box
-            const bowBase = project3DPoint(0, -hh, 0, cosY, sinY, cosX, sinX, fov);
-            const bowLeftTip = project3DPoint(-6.5, -hh - 4.8, -1.8, cosY, sinY, cosX, sinX, fov);
-            const bowLeftBack = project3DPoint(-5.5, -hh - 3.6, 2.2, cosY, sinY, cosX, sinX, fov);
-            const bowRightTip = project3DPoint(6.5, -hh - 4.8, -1.8, cosY, sinY, cosX, sinX, fov);
-            const bowRightBack = project3DPoint(5.5, -hh - 3.6, 2.2, cosY, sinY, cosX, sinX, fov);
-            const bowFrontTail = project3DPoint(-2.2, -hh - 1.2, -4.5, cosY, sinY, cosX, sinX, fov);
-            const bowBackTail = project3DPoint(2.2, -hh - 1.2, 4.5, cosY, sinY, cosX, sinX, fov);
-
-            const bowLoops = [
-                {
-                    z: bowLeftTip.z,
-                    pts: [bowBase, bowLeftTip, bowLeftBack],
-                    fill: shadeRgb(palette.bowRgb, 1.08),
-                    stroke: shadeRgb(palette.ribbonRgb, 0.85)
-                },
-                {
-                    z: bowRightTip.z,
-                    pts: [bowBase, bowRightTip, bowRightBack],
-                    fill: shadeRgb(palette.bowRgb, 0.94),
-                    stroke: shadeRgb(palette.ribbonRgb, 0.8)
-                },
-                {
-                    z: bowFrontTail.z,
-                    pts: [bowBase, bowFrontTail, { x: bowFrontTail.x + 1.8, y: bowFrontTail.y + 1.5 }],
-                    fill: shadeRgb(palette.ribbonRgb, 1.05),
-                    stroke: shadeRgb(palette.ribbonRgb, 0.8)
-                },
-                {
-                    z: bowBackTail.z,
-                    pts: [bowBase, bowBackTail, { x: bowBackTail.x - 1.8, y: bowBackTail.y + 1.5 }],
-                    fill: shadeRgb(palette.ribbonRgb, 0.88),
-                    stroke: shadeRgb(palette.ribbonRgb, 0.75)
-                }
-            ];
-
-            bowLoops.sort((a, b) => b.z - a.z);
-            bowLoops.forEach(loop => {
-                drawPolygon2D(loop.pts, loop.fill, loop.stroke, 1.2);
-            });
-
-            // Center bow knot sphere
-            ctx.fillStyle = shadeRgb(palette.bowRgb, 1.12);
-            ctx.strokeStyle = shadeRgb(palette.ribbonRgb, 0.75);
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.arc(bowBase.x, bowBase.y - 1.2, 2.4, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-
-            ctx.restore();
-        }
 
         function setupTouchDetection() {
             const isTouchCapable = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
@@ -859,7 +488,7 @@
         function toggleTouchControls() {
             showTouchControls = !showTouchControls;
             updateTouchControlsVisibility();
-            triggerToast(showTouchControls ? 'Snowball Controls Enabled' : 'Snowball Controls Hidden', 'fa-gamepad');
+            triggerToast(showTouchControls ? 'Touch Controls Enabled' : 'Touch Controls Hidden', 'fa-gamepad');
         }
 
         function updateTouchControlsVisibility() {
@@ -881,21 +510,81 @@
 
             const scaleFactor = Math.max(0.85, Math.min(1.3, canvas.width / 420));
             player.moveSpeed = 5.5 * scaleFactor;
-
+            
             if (!isGameRunning && player.x === 0) {
                 player.x = canvas.width / 2 - player.width / 2;
                 player.y = canvas.height - 150;
             }
-
-            if (!snowLayers.far.length) {
+            if (snowLayers.length === 0) {
                 initSnowLayers();
             }
         }
         window.addEventListener('resize', resizeCanvas);
         window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 150));
 
+        // 3-Layer Depth Snow System (Far tiny dots, Middle flakes, Close large soft snow)
+        function initSnowLayers() {
+            const w = canvas.width || window.innerWidth;
+            const h = canvas.height || window.innerHeight;
+
+            const configs = [
+                // Layer 0: Distant tiny dots falling slowly
+                { count: 75, minR: 0.9, maxR: 1.7, minSpeed: 0.45, maxSpeed: 0.95, drift: 0.25, alphaMin: 0.35, alphaMax: 0.6 },
+                // Layer 1: Mid-distance medium snowflakes
+                { count: 48, minR: 2.2, maxR: 3.4, minSpeed: 1.2, maxSpeed: 2.1, drift: 0.55, alphaMin: 0.6, alphaMax: 0.85 },
+                // Layer 2: Foreground large close snowflakes falling faster
+                { count: 24, minR: 4.0, maxR: 6.2, minSpeed: 2.4, maxSpeed: 3.9, drift: 1.0, alphaMin: 0.78, alphaMax: 0.98 }
+            ];
+
+            snowLayers = configs.map(cfg => {
+                const flakes = [];
+                for (let i = 0; i < cfg.count; i++) {
+                    flakes.push({
+                        x: Math.random() * w,
+                        y: Math.random() * h,
+                        radius: cfg.minR + Math.random() * (cfg.maxR - cfg.minR),
+                        speedY: cfg.minSpeed + Math.random() * (cfg.maxSpeed - cfg.minSpeed),
+                        driftAmp: cfg.drift * (0.5 + Math.random() * 0.8),
+                        phase: Math.random() * Math.PI * 2,
+                        phaseSpeed: 0.01 + Math.random() * 0.025,
+                        alpha: cfg.alphaMin + Math.random() * (cfg.alphaMax - cfg.alphaMin)
+                    });
+                }
+                return flakes;
+            });
+        }
+
+        function updateAndDrawSnow(layerIdx) {
+            const flakes = snowLayers[layerIdx];
+            if (!flakes) return;
+
+            ctx.save();
+            for (let i = 0; i < flakes.length; i++) {
+                const f = flakes[i];
+                if (!isPaused) {
+                    f.y += f.speedY;
+                    f.phase += f.phaseSpeed;
+                    f.x += Math.sin(f.phase) * f.driftAmp;
+
+                    if (f.y > canvas.height + 10) {
+                        f.y = -10;
+                        f.x = Math.random() * canvas.width;
+                    }
+                    if (f.x > canvas.width + 10) f.x = -10;
+                    if (f.x < -10) f.x = canvas.width + 10;
+                }
+
+                ctx.fillStyle = `rgba(255, 255, 255, ${f.alpha})`;
+                ctx.beginPath();
+                ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+
         function initGame() {
             resizeCanvas();
+            initSnowLayers();
             cameraY = 0;
             gameScore = 0;
             sessionStars = 0;
@@ -905,8 +594,7 @@
             continueCost = 50;
             keys.left = false;
             keys.right = false;
-            document.getElementById('leftTouchBtn').classList.remove('is-pressed');
-            document.getElementById('rightTouchBtn').classList.remove('is-pressed');
+            pauseStartTime = null;
 
             player.x = canvas.width / 2 - player.width / 2;
             player.y = canvas.height - 150;
@@ -925,15 +613,14 @@
             powerupItems = [];
             particles = [];
             clouds = [];
-            initSnowLayers();
 
-            // Smaller, sparse, transparent white clouds (0.24 alpha)
+            // Fewer, smaller, very transparent white clouds
             for (let i = 0; i < 5; i++) {
                 clouds.push({
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
-                    size: 16 + Math.random() * 14,
-                    speed: 0.25 + Math.random() * 0.35
+                    size: 16 + Math.random() * 16,
+                    speed: 0.2 + Math.random() * 0.3
                 });
             }
 
@@ -958,12 +645,12 @@
         function spawnPlatformAt(yPos) {
             const thousands = Math.floor(gameScore / 1000);
             const baseWidth = Math.min(120, Math.max(85, canvas.width * 0.22));
-            const minMultiplier = (player.width * 1.1) / baseWidth;
+            const minMultiplier = (player.width * 1.1) / baseWidth; 
             const shrinkMultiplier = Math.max(minMultiplier, 1 - (thousands * 0.05));
             const width = baseWidth * shrinkMultiplier;
 
-            const xPos = Math.random() * Math.max(20, canvas.width - width);
-
+            const xPos = Math.random() * (canvas.width - width);
+            
             let pType = 'standard';
             const rand = Math.random();
             if (rand < 0.28) pType = 'moving';
@@ -973,24 +660,27 @@
 
             const platform = {
                 x: xPos, y: yPos,
+                originX: xPos, originY: yPos,
                 width: width, height: 22,
                 type: pType,
                 vx: pType === 'moving' ? moveSpeedVal : 0,
                 hits: 0,
-                broken: false
+                broken: false,
+                respawnAt: 0,
+                respawnAlpha: 1
             };
             platforms.push(platform);
 
             if (Math.random() < 0.5) {
-                const palette = PRESENT_PALETTES[Math.floor(Math.random() * PRESENT_PALETTES.length)];
+                const style = PRESENT_STYLES[Math.floor(Math.random() * PRESENT_STYLES.length)];
                 starsList.push({
                     x: xPos + width / 2 - 12,
-                    y: yPos - 34,
+                    y: yPos - 32,
                     width: 24, height: 24,
                     collected: false,
                     rotation: Math.random() * Math.PI * 2,
-                    bobPhase: Math.random() * Math.PI * 2,
-                    palette: palette
+                    bobOffset: Math.random() * Math.PI * 2,
+                    style: style
                 });
             }
 
@@ -1008,12 +698,6 @@
 
         function update() {
             if (!isGameRunning || isPaused) return;
-
-            updateSnowFlakes(snowLayers.far, canvas.width, canvas.height);
-            updateSnowFlakes(snowLayers.mid, canvas.width, canvas.height);
-            updateSnowFlakes(snowLayers.near, canvas.width, canvas.height);
-
-            const prevBottom = player.y + player.height;
 
             if (activePowerups.rocketTimer > 0) {
                 activePowerups.rocketTimer--;
@@ -1041,7 +725,6 @@
             if (player.x > canvas.width) player.x = -player.width;
 
             player.y += player.vy;
-            const currBottom = player.y + player.height;
 
             const targetCamY = canvas.height * 0.4 - player.y;
             if (targetCamY > cameraY) {
@@ -1053,29 +736,30 @@
                 }
             }
 
-            // Swept vertical platform landing check to prevent tunneling after continue/retry
+            // Swept vertical collision check prevents tunneling through platforms at any fall speed
             if (player.vy > 0 && activePowerups.rocketTimer <= 0) {
+                const prevBottom = player.y + player.height - player.vy;
+                const currBottom = player.y + player.height;
+
                 for (let i = 0; i < platforms.length; i++) {
                     const p = platforms[i];
-                    if (p.broken) continue;
-
-                    const overlapsHorizontally =
-                        player.x + player.width > p.x + 4 &&
-                        player.x < p.x + p.width - 4;
-                    const crossedPlatformTop =
-                        prevBottom <= p.y + 8 &&
-                        currBottom >= p.y;
-
-                    if (overlapsHorizontally && crossedPlatformTop) {
+                    if (!p.broken &&
+                        player.x + player.width > p.x &&
+                        player.x < p.x + p.width &&
+                        prevBottom <= p.y + 12 &&
+                        currBottom >= p.y) {
+                        
                         player.y = p.y - player.height;
                         player.vy = player.jumpStrength;
                         playBounceSound();
-                        createParticles(player.x + player.width / 2, p.y, '#ffffff', 5);
+                        createParticles(player.x + player.width / 2, player.y + player.height, '#ffffff', 5);
 
                         if (p.type === 'fragile') {
                             p.hits++;
                             if (p.hits >= 1) {
                                 p.broken = true;
+                                p.respawnAt = performance.now() + 3000;
+                                p.respawnAlpha = 0;
                                 createParticles(p.x + p.width / 2, p.y + p.height / 2, '#c084fc', 12);
                             }
                         }
@@ -1086,15 +770,23 @@
                 }
             }
 
+            const now = performance.now();
             platforms.forEach(p => {
                 if (p.type === 'moving') {
                     p.x += p.vx;
-                    if (p.x <= 0) {
-                        p.x = 0;
-                        p.vx = Math.abs(p.vx);
-                    } else if (p.x + p.width >= canvas.width) {
-                        p.x = canvas.width - p.width;
-                        p.vx = -Math.abs(p.vx);
+                    if (p.x <= 0 || p.x + p.width >= canvas.width) p.vx *= -1;
+                }
+                if (p.type === 'fragile') {
+                    if (p.broken && p.respawnAt > 0 && now >= p.respawnAt) {
+                        p.x = p.originX;
+                        p.y = p.originY;
+                        p.broken = false;
+                        p.hits = 0;
+                        p.respawnAt = 0;
+                        p.respawnAlpha = 0.15;
+                        createParticles(p.x + p.width / 2, p.y + p.height / 2, '#e879f9', 10);
+                    } else if (!p.broken && p.respawnAlpha < 1) {
+                        p.respawnAlpha = Math.min(1, p.respawnAlpha + 0.08);
                     }
                 }
             });
@@ -1103,10 +795,10 @@
                 activePowerups.magnetTimer--;
                 starsList.forEach(s => {
                     if (!s.collected) {
-                        const dx = (player.x + player.width / 2) - (s.x + s.width / 2);
-                        const dy = (player.y + player.height / 2) - (s.y + s.height / 2);
+                        const dx = (player.x + player.width/2) - (s.x + 12);
+                        const dy = (player.y + player.height/2) - (s.y + 12);
                         const dist = Math.hypot(dx, dy);
-                        if (dist < 220 && dist > 0.001) {
+                        if (dist < 220) {
                             s.x += (dx / dist) * 8;
                             s.y += (dy / dist) * 8;
                         }
@@ -1116,19 +808,20 @@
 
             starsList.forEach(s => {
                 if (!s.collected) {
-                    s.rotation += 0.045;
-                    s.bobPhase = (s.bobPhase || 0) + 0.06;
+                    s.rotation += 0.04;
+                    s.bobOffset += 0.07;
                     if (player.x < s.x + s.width &&
                         player.x + player.width > s.x &&
                         player.y < s.y + s.height &&
                         player.y + player.height > s.y) {
-
+                        
                         s.collected = true;
                         playCoinSound();
                         const gained = 1 * comboMultiplier;
                         sessionStars += gained;
                         userProgress.stars += gained;
-                        createParticles(s.x + s.width / 2, s.y + s.height / 2, s.palette ? s.palette.box : '#ef4444', 8);
+                        createParticles(s.x + 12, s.y + 12, s.style.top, 8);
+                        createParticles(s.x + 12, s.y + 12, s.style.ribbon, 5);
                         saveData();
                         checkMissionsProgress('stars', sessionStars);
                     }
@@ -1141,12 +834,12 @@
                     player.x + player.width > item.x &&
                     player.y < item.y + item.height &&
                     player.y + player.height > item.y) {
-
+                    
                     item.collected = true;
                     if (item.type === 'magnet') activePowerups.magnetTimer = POWERUPS_CONFIG.magnet.durations[userProgress.upgrades.magnet || 0];
                     if (item.type === 'rocket') activePowerups.rocketTimer = POWERUPS_CONFIG.rocket.durations[userProgress.upgrades.rocket || 0];
                     playCoinSound();
-                    triggerToast(`Activated ${POWERUPS_CONFIG[item.type]?.name || item.type.toUpperCase()}!`, 'fa-bolt');
+                    triggerToast(`Activated ${item.type.toUpperCase()}!`, item.type === 'rocket' ? 'fa-tree' : 'fa-bolt');
                 }
             });
 
@@ -1177,7 +870,7 @@
                 if (activePowerups.shieldHits > 0) {
                     activePowerups.shieldHits--;
                     player.vy = player.jumpStrength * 1.3;
-                    triggerToast('Shield Saved You!', 'fa-shield-halved');
+                    triggerToast('Frost Shield Saved You!', 'fa-shield-halved');
                 } else {
                     handleGameOver();
                 }
@@ -1196,12 +889,11 @@
         }
 
         function performDoubleJump() {
-            if (!isGameRunning || isPaused) return;
             if (activePowerups.doubleJumps > 0) {
                 activePowerups.doubleJumps--;
                 player.vy = player.jumpStrength * 1.1;
                 playBounceSound();
-                createParticles(player.x + player.width / 2, player.y + player.height, '#10b981', 10);
+                createParticles(player.x + player.width/2, player.y + player.height, '#10b981', 10);
                 triggerToast('Double Jump Used!', 'fa-shoe-prints');
             }
         }
@@ -1218,18 +910,207 @@
             }
         }
 
+        // True 3D Isometric / Perspective Rotating Christmas Present
+        function drawPresent(s) {
+            const bobY = Math.sin(s.bobOffset) * 3;
+            const style = s.style || PRESENT_STYLES[0];
+            const theta = s.rotation;
+
+            const halfW = 10.5;
+            const boxH = 14.5;
+            const tilt = 0.42; // 3D camera elevation tilt
+
+            // Rotate 4 base corners of the cube around vertical Y-axis
+            const rawCorners = [
+                { x: -halfW, z: -halfW },
+                { x:  halfW, z: -halfW },
+                { x:  halfW, z:  halfW },
+                { x: -halfW, z:  halfW }
+            ];
+
+            const cosT = Math.cos(theta);
+            const sinT = Math.sin(theta);
+
+            // Project 3D (x, y, z) to 2D screen coordinates
+            const project = (x, y, z) => ({
+                px: x,
+                py: y + z * tilt
+            });
+
+            const rotCorners = rawCorners.map(c => ({
+                rx: c.x * cosT - c.z * sinT,
+                rz: c.x * sinT + c.z * cosT
+            }));
+
+            const topPts = rotCorners.map(c => project(c.rx, -boxH * 0.5, c.rz));
+            const botPts = rotCorners.map(c => project(c.rx,  boxH * 0.5, c.rz));
+
+            ctx.save();
+            ctx.translate(s.x + s.width / 2, s.y + s.height / 2 + bobY + 1);
+
+            // Soft drop shadow underneath rotating present
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.16)';
+            ctx.beginPath();
+            ctx.ellipse(0, boxH * 0.5 + 6, 12, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = 1.15;
+            ctx.strokeStyle = style.stroke;
+
+            // 1. Draw visible vertical faces sorted back-to-front
+            const faces = [];
+            for (let i = 0; i < 4; i++) {
+                const next = (i + 1) % 4;
+                const avgZ = (rotCorners[i].rz + rotCorners[next].rz) * 0.5;
+                // Only draw front-facing walls (outward normal z > 0)
+                if (avgZ > 0) {
+                    const avgX = (rotCorners[i].rx + rotCorners[next].rx) * 0.5;
+                    faces.push({ i, next, avgZ, avgX });
+                }
+            }
+            faces.sort((a, b) => a.avgZ - b.avgZ);
+
+            faces.forEach(face => {
+                const { i, next, avgX } = face;
+                const t0 = topPts[i], t1 = topPts[next];
+                const b1 = botPts[next], b0 = botPts[i];
+
+                // Directional lighting: left-facing side is brighter, right-facing side is shaded
+                const isLitSide = avgX <= 0;
+                ctx.fillStyle = isLitSide ? style.left : style.right;
+
+                ctx.beginPath();
+                ctx.moveTo(t0.px, t0.py);
+                ctx.lineTo(t1.px, t1.py);
+                ctx.lineTo(b1.px, b1.py);
+                ctx.lineTo(b0.px, b0.py);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Vertical wrapping ribbon strip down the center of the 3D face
+                const rStart = 0.36, rEnd = 0.64;
+                const rt0x = t0.px + (t1.px - t0.px) * rStart;
+                const rt0y = t0.py + (t1.py - t0.py) * rStart;
+                const rt1x = t0.px + (t1.px - t0.px) * rEnd;
+                const rt1y = t0.py + (t1.py - t0.py) * rEnd;
+
+                const rb0x = b0.px + (b1.px - b0.px) * rStart;
+                const rb0y = b0.py + (b1.py - b0.py) * rStart;
+                const rb1x = b0.px + (b1.px - b0.px) * rEnd;
+                const rb1y = b0.py + (b1.py - b0.py) * rEnd;
+
+                ctx.fillStyle = isLitSide ? style.ribbon : style.ribbonDark;
+                ctx.beginPath();
+                ctx.moveTo(rt0x, rt0y);
+                ctx.lineTo(rt1x, rt1y);
+                ctx.lineTo(rb1x, rb1y);
+                ctx.lineTo(rb0x, rb0y);
+                ctx.closePath();
+                ctx.fill();
+
+                // Subtle lid rim line near the top of the box
+                const lidT = 0.22;
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(t0.px + (b0.px - t0.px) * lidT, t0.py + (b0.py - t0.py) * lidT);
+                ctx.lineTo(t1.px + (b1.px - t1.px) * lidT, t1.py + (b1.py - t1.py) * lidT);
+                ctx.stroke();
+
+                ctx.strokeStyle = style.stroke;
+                ctx.lineWidth = 1.15;
+            });
+
+            // 2. Draw Top Lid Surface
+            ctx.fillStyle = style.top;
+            ctx.beginPath();
+            ctx.moveTo(topPts[0].px, topPts[0].py);
+            ctx.lineTo(topPts[1].px, topPts[1].py);
+            ctx.lineTo(topPts[2].px, topPts[2].py);
+            ctx.lineTo(topPts[3].px, topPts[3].py);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // 3. Crossed Ribbon Strips on Top Lid
+            const lerpPt = (pA, pB, t) => ({
+                px: pA.px + (pB.px - pA.px) * t,
+                py: pA.py + (pB.py - pA.py) * t
+            });
+
+            ctx.fillStyle = style.ribbon;
+            // Ribbon band 1 (edge 0-1 to edge 3-2)
+            const r1a = lerpPt(topPts[0], topPts[1], 0.36);
+            const r1b = lerpPt(topPts[0], topPts[1], 0.64);
+            const r1c = lerpPt(topPts[3], topPts[2], 0.64);
+            const r1d = lerpPt(topPts[3], topPts[2], 0.36);
+            ctx.beginPath();
+            ctx.moveTo(r1a.px, r1a.py);
+            ctx.lineTo(r1b.px, r1b.py);
+            ctx.lineTo(r1c.px, r1c.py);
+            ctx.lineTo(r1d.px, r1d.py);
+            ctx.closePath();
+            ctx.fill();
+
+            // Ribbon band 2 (edge 1-2 to edge 0-3)
+            const r2a = lerpPt(topPts[1], topPts[2], 0.36);
+            const r2b = lerpPt(topPts[1], topPts[2], 0.64);
+            const r2c = lerpPt(topPts[0], topPts[3], 0.64);
+            const r2d = lerpPt(topPts[0], topPts[3], 0.36);
+            ctx.beginPath();
+            ctx.moveTo(r2a.px, r2a.py);
+            ctx.lineTo(r2b.px, r2b.py);
+            ctx.lineTo(r2c.px, r2c.py);
+            ctx.lineTo(r2d.px, r2d.py);
+            ctx.closePath();
+            ctx.fill();
+
+            // 4. 3D Rotating Ribbon Bow on Top Center
+            const bowY = -boxH * 0.5 - 1.5;
+            const bowSpan = 5.5;
+            const bowX = bowSpan * cosT;
+            const bowZ = bowSpan * sinT * tilt;
+
+            ctx.fillStyle = style.ribbon;
+            ctx.strokeStyle = style.stroke;
+            ctx.lineWidth = 1;
+
+            // Left & right 3D bow loops
+            ctx.beginPath();
+            ctx.ellipse(-bowX * 0.65, bowY - bowZ * 0.65 - 1.5, 4.2, 2.5, -0.35 * cosT, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.ellipse(bowX * 0.65, bowY + bowZ * 0.65 - 1.5, 4.2, 2.5, 0.35 * cosT, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Center bow knot
+            ctx.fillStyle = style.ribbonDark;
+            ctx.beginPath();
+            ctx.arc(0, bowY - 0.5, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
         function render() {
-            animFrameId = null;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Distant tiny snow dots
-            drawSnowFlakes(snowLayers.far);
+            // 1. Far distant snow (tiny slow dots)
+            updateAndDrawSnow(0);
 
-            // Smaller, sparse, transparent white clouds (0.24 alpha)
+            // 2. Smaller, fewer, more transparent white clouds
             clouds.forEach(c => {
-                c.x += c.speed;
-                if (c.x > canvas.width + 60) {
-                    c.x = -60;
+                if (!isPaused) {
+                    c.x += c.speed;
+                    if (c.x > canvas.width + 60) {
+                        c.x = -60;
+                    }
                 }
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.24)';
                 ctx.beginPath();
@@ -1239,14 +1120,19 @@
                 ctx.fill();
             });
 
-            // Middle-layer snow
-            drawSnowFlakes(snowLayers.mid);
+            // 3. Mid-level snow flakes
+            updateAndDrawSnow(1);
 
             ctx.save();
             ctx.translate(0, cameraY);
 
             platforms.forEach(p => {
                 if (p.broken) return;
+
+                ctx.save();
+                if (p.type === 'fragile' && p.respawnAlpha < 1) {
+                    ctx.globalAlpha = p.respawnAlpha;
+                }
 
                 let sprite = imgRed;
                 if (p.type === 'moving') sprite = imgBlue;
@@ -1260,16 +1146,16 @@
                     ctx.roundRect(p.x, p.y, p.width, p.height, 8);
                     ctx.fill();
                 }
+                ctx.restore();
             });
 
-            // Genuine rotating 3D rectangular prism Christmas presents
+            // Draw rotating 3D Christmas presents
             starsList.forEach(s => {
                 if (!s.collected) {
-                    draw3DPresent(s);
+                    drawPresent(s);
                 }
             });
 
-            // Power-up pickups (tree.png at 2x size 48x60 for rocket)
             powerupItems.forEach(item => {
                 if (!item.collected) {
                     if (item.type === 'rocket') {
@@ -1312,10 +1198,9 @@
                 ctx.restore();
             });
 
-            // Character sprite: man.png at 1.5x scale, bullet.png at 2x scale
-            const isRocketActive = activePowerups.rocketTimer > 0;
-            const activeSprite = isRocketActive ? imgBullet : imgMan;
-            const spriteScale = isRocketActive ? 2 : 1.5;
+            const isRocket = activePowerups.rocketTimer > 0;
+            const activeSprite = isRocket ? imgBullet : imgMan;
+            const spriteScale = isRocket ? 2 : 1.5;
             const drawWidth = player.width * spriteScale;
             const drawHeight = player.height * spriteScale;
 
@@ -1326,28 +1211,30 @@
                 ctx.drawImage(activeSprite, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
                 ctx.restore();
             } else {
-                ctx.font = isRocketActive ? '52px serif' : '40px serif';
+                ctx.font = isRocket ? '68px serif' : '51px serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(isRocketActive ? '🚀' : '🎅', player.x + player.width / 2, player.y + player.height / 2);
+                ctx.fillText(isRocket ? '🚀' : '🎅', player.x + player.width / 2, player.y + player.height / 2);
             }
 
             if (activePowerups.shieldHits > 0) {
                 ctx.strokeStyle = '#06b6d4';
                 ctx.lineWidth = 3;
                 ctx.beginPath();
-                ctx.arc(player.x + player.width / 2, player.y + player.height / 2, 28, 0, Math.PI * 2);
+                ctx.arc(player.x + player.width/2, player.y + player.height/2, 34, 0, Math.PI * 2);
                 ctx.stroke();
             }
 
             ctx.restore();
 
-            // Close foreground snow layer
-            drawSnowFlakes(snowLayers.near);
+            // 4. Foreground close snow (large fast-falling snowflakes)
+            updateAndDrawSnow(2);
 
             if (isGameRunning && !isPaused) {
                 update();
                 animFrameId = requestAnimationFrame(render);
+            } else {
+                animFrameId = null;
             }
         }
 
@@ -1366,23 +1253,18 @@
             const pContainer = document.getElementById('powerupContainer');
             pContainer.innerHTML = '';
 
-            if (activePowerups.magnetTimer > 0) pContainer.appendChild(createHudBadge('fa-magnet', 'bg-red-500', `${Math.ceil(activePowerups.magnetTimer / 60)}s`));
+            if (activePowerups.magnetTimer > 0) pContainer.appendChild(createHudBadge('fa-magnet', 'bg-red-500', `${Math.ceil(activePowerups.magnetTimer/60)}s`));
             if (activePowerups.shieldHits > 0) pContainer.appendChild(createHudBadge('fa-shield-halved', 'bg-cyan-500', `${activePowerups.shieldHits} Hits`));
             if (activePowerups.doubleJumps > 0) pContainer.appendChild(createHudBadge('fa-shoe-prints', 'bg-emerald-500', `${activePowerups.doubleJumps} Jumps`));
-            if (activePowerups.rocketTimer > 0) pContainer.appendChild(createRocketHudBadge(`${Math.ceil(activePowerups.rocketTimer / 60)}s`));
+            if (activePowerups.rocketTimer > 0) pContainer.appendChild(createHudBadge('fa-tree', 'bg-emerald-600', `${Math.ceil(activePowerups.rocketTimer/60)}s`, 'tree.png'));
         }
 
-        function createHudBadge(iconClass, bgColor, text) {
+        function createHudBadge(iconClass, bgColor, text, imgSrc = null) {
             const div = document.createElement('div');
             div.className = `${bgColor} text-white px-2.5 py-1 rounded-xl text-xs font-game flex items-center gap-1.5 shadow-md`;
-            div.innerHTML = `<i class="fa-solid ${iconClass}"></i><span>${text}</span>`;
-            return div;
-        }
-
-        function createRocketHudBadge(text) {
-            const div = document.createElement('div');
-            div.className = 'bg-amber-500 text-white px-3 py-1.5 rounded-2xl text-xs font-game flex items-center gap-2 shadow-md';
-            const iconHtml = `<img src="tree.png" alt="Tree Boost" onerror="this.onerror=null; this.outerHTML='<span class=\\'text-xl leading-none\\'>🎄</span>';" class="w-10 h-12 object-contain shrink-0">`;
+            const iconHtml = imgSrc
+                ? `<img src="${imgSrc}" alt="" class="w-10 h-12 object-contain" onerror="this.outerHTML='<i class=\\'fa-solid ${iconClass}\\'></i>'">`
+                : `<i class="fa-solid ${iconClass}"></i>`;
             div.innerHTML = `${iconHtml}<span>${text}</span>`;
             return div;
         }
@@ -1404,32 +1286,30 @@
                 const currentLevel = userProgress.upgrades[key] || 0;
                 const isMax = currentLevel >= conf.costs.length;
                 const cost = isMax ? 'MAX' : conf.costs[currentLevel];
-
-                const isRocket = key === 'rocket';
-                const iconBoxClass = isRocket ? 'w-20 h-20' : 'w-12 h-12 text-xl';
-                const iconContent = isRocket
-                    ? `<img src="tree.png" alt="Holiday Tree" onerror="this.onerror=null; this.outerHTML='<span class=\\'text-4xl leading-none\\'>🎄</span>';" class="w-16 h-20 object-contain">`
+                const boxSize = conf.imgSrc ? 'w-20 h-20' : 'w-12 h-12';
+                const visualHtml = conf.imgSrc
+                    ? `<img src="${conf.imgSrc}" alt="${conf.name}" class="w-16 h-20 object-contain" onerror="this.outerHTML='<i class=\\'fa-solid ${conf.icon}\\'></i>'">`
                     : `<i class="fa-solid ${conf.icon}"></i>`;
 
                 const card = document.createElement('div');
                 card.className = 'bg-white/90 p-3.5 rounded-2xl shadow border border-slate-100 flex items-center justify-between gap-3';
                 card.innerHTML = `
                     <div class="flex items-center gap-3">
-                        <div class="${iconBoxClass} rounded-2xl ${conf.bgColor} text-white flex items-center justify-center shadow-md shrink-0">
-                            ${iconContent}
+                        <div class="${boxSize} shrink-0 rounded-2xl ${conf.bgColor} text-white flex items-center justify-center text-xl shadow-md">
+                            ${visualHtml}
                         </div>
                         <div>
                             <div class="font-game text-slate-800 text-sm">${conf.name}</div>
                             <div class="text-[11px] text-slate-500 font-medium leading-tight">${conf.desc}</div>
                             <div class="flex gap-1 mt-1">
-                                ${[1, 2, 3].map(lvl => `
-                                    <div class="w-4 h-1.5 rounded-full ${lvl <= currentLevel ? 'bg-amber-400' : 'bg-slate-200'}"></div>
+                                ${[1,2,3].map(lvl => `
+                                    <div class="w-4 h-1.5 rounded-full ${lvl <= currentLevel ? 'bg-red-500' : 'bg-slate-200'}"></div>
                                 `).join('')}
                             </div>
                         </div>
                     </div>
-                    <button onclick="buyPowerup('${key}')" ${isMax || userProgress.stars < cost ? 'disabled' : ''}
-                            class="btn-bounce px-3 py-2 rounded-xl font-game text-xs flex items-center gap-1 shrink-0 ${isMax ? 'bg-slate-200 text-slate-400' : 'bg-amber-400 hover:bg-amber-500 text-white shadow-md disabled:opacity-50'}">
+                    <button onclick="buyPowerup('${key}')" ${isMax || userProgress.stars < cost ? 'disabled' : ''} 
+                            class="btn-bounce px-3 py-2 rounded-xl font-game text-xs flex items-center gap-1 ${isMax ? 'bg-slate-200 text-slate-400' : 'bg-red-500 hover:bg-red-600 text-white shadow-md disabled:opacity-50'}">
                         ${isMax ? 'MAXED' : `<i class="fa-solid fa-gift"></i> ${cost}`}
                     </button>
                 `;
@@ -1468,7 +1348,7 @@
                         <div class="font-game text-slate-800 text-xs">${item.title}</div>
                         <div class="text-[10px] text-slate-500">${item.desc || `Target: ${item.req}`}</div>
                         <div class="w-full bg-slate-200 h-2 rounded-full mt-2 overflow-hidden">
-                            <div class="bg-indigo-500 h-full rounded-full" style="width: ${Math.min(100, (item.current / item.req) * 100)}%"></div>
+                            <div class="bg-emerald-500 h-full rounded-full" style="width: ${Math.min(100, (item.current / item.req) * 100)}%"></div>
                         </div>
                     </div>
                     <button ${isDone || item.current < item.req ? 'disabled' : ''} onclick="claimReward('${item.id}', '${activeTab}')"
@@ -1482,8 +1362,8 @@
 
         function switchTaskTab(tab) {
             window.currentTaskTab = tab;
-            document.getElementById('tabMissionsBtn').className = `flex-1 py-2 font-game text-xs rounded-xl ${tab === 'missions' ? 'bg-indigo-500 text-white shadow' : 'bg-slate-200 text-slate-600'}`;
-            document.getElementById('tabAchievementsBtn').className = `flex-1 py-2 font-game text-xs rounded-xl ${tab === 'achievements' ? 'bg-indigo-500 text-white shadow' : 'bg-slate-200 text-slate-600'}`;
+            document.getElementById('tabMissionsBtn').className = `flex-1 py-2 font-game text-xs rounded-xl ${tab === 'missions' ? 'bg-emerald-600 text-white shadow' : 'bg-slate-200 text-slate-600'}`;
+            document.getElementById('tabAchievementsBtn').className = `flex-1 py-2 font-game text-xs rounded-xl ${tab === 'achievements' ? 'bg-emerald-600 text-white shadow' : 'bg-slate-200 text-slate-600'}`;
             renderMissions();
         }
 
@@ -1512,13 +1392,17 @@
 
         function startGame() {
             initAudio();
+            if (animFrameId) {
+                cancelAnimationFrame(animFrameId);
+                animFrameId = null;
+            }
             document.getElementById('startOverlay').classList.add('hidden');
             document.getElementById('gameOverOverlay').classList.add('hidden');
             document.getElementById('pauseOverlay').classList.add('hidden');
             isGameRunning = true;
             isPaused = false;
             initGame();
-            startAnimationLoop();
+            render();
         }
 
         function togglePause() {
@@ -1526,10 +1410,25 @@
             isPaused = !isPaused;
             document.getElementById('pauseOverlay').classList.toggle('hidden', !isPaused);
             if (isPaused) {
-                stopAnimationLoop();
+                pauseStartTime = performance.now();
                 updateRocketSound(false);
+                if (animFrameId) {
+                    cancelAnimationFrame(animFrameId);
+                    animFrameId = null;
+                }
             } else {
-                startAnimationLoop();
+                if (pauseStartTime) {
+                    const pausedDuration = performance.now() - pauseStartTime;
+                    platforms.forEach(p => {
+                        if (p.broken && p.respawnAt > 0) {
+                            p.respawnAt += pausedDuration;
+                        }
+                    });
+                    pauseStartTime = null;
+                }
+                if (!animFrameId) {
+                    render();
+                }
             }
         }
 
@@ -1538,9 +1437,13 @@
         function exitToMenu() {
             isGameRunning = false;
             isPaused = false;
+            pauseStartTime = null;
+            if (animFrameId) {
+                cancelAnimationFrame(animFrameId);
+                animFrameId = null;
+            }
             keys.left = false;
             keys.right = false;
-            stopAnimationLoop();
             updateRocketSound(false);
             document.getElementById('startOverlay').classList.remove('hidden');
             document.getElementById('pauseOverlay').classList.add('hidden');
@@ -1550,9 +1453,12 @@
 
         function handleGameOver() {
             isGameRunning = false;
+            if (animFrameId) {
+                cancelAnimationFrame(animFrameId);
+                animFrameId = null;
+            }
             keys.left = false;
             keys.right = false;
-            stopAnimationLoop();
             updateRocketSound(false);
             if (gameScore > userProgress.highScore) {
                 userProgress.highScore = gameScore;
@@ -1584,30 +1490,37 @@
                 continueCost *= 2;
                 saveData();
 
-                const safePlatformW = 140;
-                const safePlatformH = 26;
-                const safePlatformY = -cameraY + canvas.height * 0.58;
+                if (animFrameId) {
+                    cancelAnimationFrame(animFrameId);
+                    animFrameId = null;
+                }
+
+                keys.left = false;
+                keys.right = false;
 
                 player.x = canvas.width / 2 - player.width / 2;
-                player.y = safePlatformY - player.height - 8;
+                player.y = -cameraY + canvas.height * 0.45;
                 player.vx = 0;
                 player.vy = player.jumpStrength;
 
+                const platWidth = Math.min(150, Math.max(115, canvas.width * 0.28));
+                const platX = canvas.width / 2 - platWidth / 2;
+                const platY = player.y + player.height + 24;
                 platforms.push({
-                    x: canvas.width / 2 - safePlatformW / 2,
-                    y: safePlatformY,
-                    width: safePlatformW,
-                    height: safePlatformH,
-                    type: 'standard',
-                    hits: 0,
-                    broken: false
+                    x: platX,
+                    y: platY,
+                    originX: platX,
+                    originY: platY,
+                    width: platWidth, height: 26,
+                    type: 'standard', hits: 0, broken: false,
+                    respawnAt: 0, respawnAlpha: 1
                 });
 
                 document.getElementById('gameOverOverlay').classList.add('hidden');
-                isGameRunning = true;
                 isPaused = false;
+                isGameRunning = true;
                 triggerToast('Respawned with Extra Life!', 'fa-heart');
-                startAnimationLoop();
+                render();
             }
         }
 
@@ -1630,62 +1543,39 @@
 
         // Keyboard Navigation
         window.addEventListener('keydown', e => {
-            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
-            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
+            if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = true;
+            if (e.key === 'ArrowRight' || e.key === 'd') keys.right = true;
             if (e.key === ' ' || e.key === 'ArrowUp') performDoubleJump();
         });
 
         window.addEventListener('keyup', e => {
-            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
-            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+            if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = false;
+            if (e.key === 'ArrowRight' || e.key === 'd') keys.right = false;
         });
 
         window.addEventListener('blur', () => {
             keys.left = false;
             keys.right = false;
-            document.getElementById('leftTouchBtn').classList.remove('is-pressed');
-            document.getElementById('rightTouchBtn').classList.remove('is-pressed');
         });
 
-        // Touch Interaction Listeners for Snowball Buttons & Tap-to-Double-Jump
+        // Touch Interaction Listeners for On-Screen Snowball Buttons & Tap-to-Double-Jump
         const leftBtn = document.getElementById('leftTouchBtn');
         const rightBtn = document.getElementById('rightTouchBtn');
 
-        const clearLeft = (e) => {
-            if (e) e.preventDefault();
-            keys.left = false;
-            leftBtn.classList.remove('is-pressed');
-        };
-        const clearRight = (e) => {
-            if (e) e.preventDefault();
-            keys.right = false;
-            rightBtn.classList.remove('is-pressed');
-        };
+        const clearLeft = (e) => { e.preventDefault(); keys.left = false; };
+        const clearRight = (e) => { e.preventDefault(); keys.right = false; };
 
-        leftBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            initAudio();
-            keys.left = true;
-            keys.right = false;
-            leftBtn.classList.add('is-pressed');
-            rightBtn.classList.remove('is-pressed');
-        });
+        leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.left = true; keys.right = false; });
         leftBtn.addEventListener('touchend', clearLeft);
         leftBtn.addEventListener('touchcancel', clearLeft);
         leftBtn.addEventListener('mouseleave', clearLeft);
 
-        rightBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            initAudio();
-            keys.right = true;
-            keys.left = false;
-            rightBtn.classList.add('is-pressed');
-            leftBtn.classList.remove('is-pressed');
-        });
+        rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.right = true; keys.left = false; });
         rightBtn.addEventListener('touchend', clearRight);
         rightBtn.addEventListener('touchcancel', clearRight);
         rightBtn.addEventListener('mouseleave', clearRight);
 
+        // Tap on Canvas for Mid-air Double Jump
         canvas.addEventListener('touchstart', (e) => {
             if (e.target !== leftBtn && e.target !== rightBtn) {
                 initAudio();
@@ -1697,6 +1587,7 @@
             loadSavedData();
             setupTouchDetection();
             resizeCanvas();
+            initSnowLayers();
         };
     </script>
 </body>
