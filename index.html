@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Santa Climb</title>
-    <!-- Festive Christmas Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎅</text></svg>">
+    <!-- Browser Address Bar Icon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎄</text></svg>">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
-    
+
     <style>
         * {
             user-select: none;
@@ -43,6 +43,23 @@
         .btn-bounce:active {
             transform: scale(0.92);
         }
+        /* Frosty snowball styling for touch movement buttons */
+        .snowball-btn {
+            background: radial-gradient(circle at 30% 28%, #ffffff 0%, #f0f9ff 52%, #bae6fd 100%);
+            box-shadow:
+                0 10px 22px rgba(15, 23, 42, 0.28),
+                inset 0 -6px 12px rgba(125, 211, 252, 0.65),
+                inset 0 4px 8px rgba(255, 255, 255, 0.95);
+            transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+        }
+        .snowball-btn:active,
+        .snowball-btn.is-pressed {
+            transform: scale(0.9);
+            background: radial-gradient(circle at 35% 32%, #ffffff 0%, #e0f2fe 65%, #93c5fd 100%);
+            box-shadow:
+                0 4px 10px rgba(15, 23, 42, 0.24),
+                inset 0 -3px 6px rgba(125, 211, 252, 0.75);
+        }
         @keyframes slideIn {
             from { transform: translateY(-100%) translateX(-50%); opacity: 0; }
             to { transform: translateY(0) translateX(-50%); opacity: 1; }
@@ -50,47 +67,13 @@
         .toast-anim {
             animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
-        /* Snowball styling for directional touch buttons */
-        .snowball-btn {
-            position: relative;
-            background:
-                radial-gradient(circle at 30% 26%, rgba(255, 255, 255, 1) 0%, rgba(240, 249, 255, 0.96) 45%, rgba(186, 230, 253, 0.92) 82%, rgba(125, 211, 252, 0.95) 100%);
-            border: 3px solid rgba(224, 242, 254, 0.95);
-            box-shadow:
-                inset -6px -7px 14px rgba(14, 165, 233, 0.24),
-                inset 5px 5px 10px rgba(255, 255, 255, 0.95),
-                0 10px 22px rgba(15, 23, 42, 0.32),
-                0 0 0 2px rgba(125, 211, 252, 0.35);
-            transition: transform 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.12s ease, filter 0.12s ease;
-        }
-        .snowball-btn::before {
-            content: '';
-            position: absolute;
-            top: 14%;
-            left: 18%;
-            width: 28%;
-            height: 18%;
-            border-radius: 9999px;
-            background: rgba(255, 255, 255, 0.85);
-            transform: rotate(-28deg);
-            pointer-events: none;
-        }
-        .snowball-btn:active {
-            transform: scale(0.91);
-            filter: brightness(0.97);
-            box-shadow:
-                inset -4px -5px 10px rgba(14, 165, 233, 0.32),
-                inset 4px 4px 8px rgba(255, 255, 255, 0.9),
-                0 5px 12px rgba(15, 23, 42, 0.28),
-                0 0 0 2px rgba(125, 211, 252, 0.45);
-        }
     </style>
 </head>
 <body class="flex items-center justify-center h-screen w-screen overflow-hidden bg-slate-900 select-none">
 
     <!-- Main Game Container with bg.jpg Background Image -->
     <div id="gameContainer" class="relative w-full h-full max-w-full max-h-full shadow-2xl overflow-hidden rounded-none border-0 flex flex-col bg-cover bg-center" style="background-image: url('bg.jpg');">
-        
+
         <!-- Game Canvas -->
         <canvas id="gameCanvas" class="w-full h-full block bg-transparent relative z-0"></canvas>
 
@@ -103,13 +86,13 @@
                     <span id="scoreText" class="font-game text-xl text-slate-800">0</span>
                 </div>
                 <!-- Combo Badge -->
-                <div id="comboBadge" class="hidden flex items-center gap-1.5 bg-gradient-to-r from-red-500 to-rose-600 text-white px-3 py-1 rounded-full shadow-lg border border-red-200 animate-pulse">
+                <div id="comboBadge" class="hidden flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white px-3 py-1 rounded-full shadow-lg border border-amber-200 animate-pulse">
                     <i class="fa-solid fa-bolt text-xs"></i>
                     <span id="comboText" class="font-game text-sm tracking-wide">2x COMBO</span>
                 </div>
             </div>
 
-            <!-- Right Side: Presents & Power-up Status & Controls Toggle -->
+            <!-- Right Side: Presents & Power-up Status -->
             <div class="flex flex-col items-end gap-2">
                 <div class="flex items-center gap-2 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-2xl shadow-md border border-white pointer-events-auto">
                     <i class="fa-solid fa-gift text-red-500 text-lg animate-bounce"></i>
@@ -132,28 +115,28 @@
         </div>
 
         <!-- Toast Notification -->
-        <div id="toast" class="hidden absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white px-4 py-2 rounded-2xl shadow-2xl border border-red-400/50 flex items-center gap-3 toast-anim pointer-events-none">
+        <div id="toast" class="hidden absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white px-4 py-2 rounded-2xl shadow-2xl border border-sky-400/50 flex items-center gap-3 toast-anim pointer-events-none">
             <div id="toastIcon" class="text-amber-400 text-lg"><i class="fa-solid fa-award"></i></div>
             <div id="toastMsg" class="font-game text-xs tracking-wide">Achievement Unlocked!</div>
         </div>
 
         <!-- START SCREEN OVERLAY -->
-        <div id="startOverlay" class="absolute inset-0 bg-sky-950/35 backdrop-blur-[2px] z-30 flex flex-col justify-between p-6 pb-12 overflow-y-auto">
+        <div id="startOverlay" class="absolute inset-0 bg-sky-900/30 backdrop-blur-[2px] z-30 flex flex-col justify-between p-6 pb-12 overflow-y-auto">
             <div class="text-center mt-6">
-                <div class="inline-block bg-white/90 backdrop-blur-md px-6 py-3 rounded-3xl shadow-xl border-2 border-red-200 mb-2">
-                    <h1 class="font-game text-4xl sm:text-5xl text-red-600 tracking-wider drop-shadow-sm">SANTA CLIMB</h1>
-                    <p class="text-xs font-bold text-emerald-600 uppercase tracking-widest mt-0.5">Presents & Snow Edition</p>
+                <div class="inline-block bg-white/90 backdrop-blur-md px-6 py-3 rounded-3xl shadow-xl border-2 border-sky-200 mb-2">
+                    <h1 class="font-game text-4xl sm:text-5xl text-sky-600 tracking-wider drop-shadow-sm">SANTA CLIMB</h1>
+                    <p class="text-xs font-bold text-sky-500 uppercase tracking-widest mt-0.5">Presents & Snow Edition</p>
                 </div>
             </div>
 
             <!-- Character Preview Box -->
             <div class="my-auto flex flex-col items-center justify-center gap-3">
-                <div class="relative w-32 h-32 bg-white/65 backdrop-blur-md rounded-full flex items-center justify-center shadow-inner border-4 border-white/80 overflow-hidden">
-                    <img src="man.png" alt="Santa Climber" onerror="this.onerror=null; this.src='https://placehold.co/100x100/dc2626/ffffff?text=🎅';" class="h-24 w-auto object-contain transform hover:scale-110 transition duration-300">
+                <div class="relative w-32 h-32 bg-white/60 backdrop-blur-md rounded-full flex items-center justify-center shadow-inner border-4 border-white/80 overflow-hidden">
+                    <img src="man.png" alt="Character" onerror="this.onerror=null; this.src='https://placehold.co/100x100/38bdf8/ffffff?text=🎅';" class="h-24 w-auto object-contain transform hover:scale-110 transition duration-300">
                     <div id="shieldPreview" class="hidden absolute inset-0 border-4 border-cyan-400 rounded-full animate-ping opacity-75"></div>
                 </div>
 
-                <!-- High Score & Total Presents Display -->
+                <!-- High Score & Present Display -->
                 <div class="flex gap-4">
                     <div class="bg-white/90 px-4 py-2 rounded-2xl shadow border border-white/80 text-center min-w-[100px]">
                         <div class="text-[10px] uppercase font-bold text-slate-400">High Score</div>
@@ -168,16 +151,16 @@
 
             <!-- Action Buttons Grid -->
             <div class="flex flex-col gap-3 mb-4 w-full max-w-sm mx-auto">
-                <button onclick="startGame()" class="btn-bounce w-full bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-game text-2xl py-4 rounded-2xl shadow-lg border-2 border-red-300 flex items-center justify-center gap-3">
+                <button onclick="startGame()" class="btn-bounce w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-game text-2xl py-4 rounded-2xl shadow-lg border-2 border-emerald-300 flex items-center justify-center gap-3">
                     <i class="fa-solid fa-play"></i> PLAY NOW
                 </button>
-                
+
                 <div class="grid grid-cols-2 gap-3">
                     <button onclick="openModal('shopModal')" class="btn-bounce bg-white/90 hover:bg-white text-slate-700 font-game py-3 rounded-2xl shadow border border-white flex items-center justify-center gap-2">
                         <i class="fa-solid fa-store text-amber-500"></i> SHOP
                     </button>
                     <button onclick="openModal('missionsModal')" class="btn-bounce bg-white/90 hover:bg-white text-slate-700 font-game py-3 rounded-2xl shadow border border-white flex items-center justify-center gap-2 relative">
-                        <i class="fa-solid fa-list-check text-emerald-600"></i> TASKS
+                        <i class="fa-solid fa-list-check text-indigo-500"></i> TASKS
                     </button>
                 </div>
             </div>
@@ -200,7 +183,7 @@
         <div id="gameOverOverlay" class="hidden absolute inset-0 bg-slate-900/75 backdrop-blur-md z-40 flex flex-col items-center justify-center p-6">
             <div class="glass-panel w-full max-w-xs sm:max-w-sm rounded-3xl p-6 flex flex-col items-center text-center relative overflow-hidden">
                 <div class="font-game text-3xl text-red-500 mb-1">GAME OVER</div>
-                <p class="text-xs text-slate-500 font-bold mb-4">YOU SLIPPED FROM THE SNOWY CLOUDS!</p>
+                <p class="text-xs text-slate-500 font-bold mb-4">YOU FELL FROM THE CLOUDS!</p>
 
                 <!-- Score Summary Box -->
                 <div class="w-full bg-slate-100/80 rounded-2xl p-4 mb-4 flex flex-col gap-2">
@@ -214,19 +197,19 @@
                     </div>
                     <div class="flex justify-between items-center text-sm border-t border-slate-200 pt-2">
                         <span class="text-slate-500 font-bold">Max Combo</span>
-                        <span id="goCombo" class="font-game text-sm text-emerald-600">1x</span>
+                        <span id="goCombo" class="font-game text-sm text-indigo-500">1x</span>
                     </div>
                 </div>
 
                 <!-- Continue Incentive Button -->
                 <div id="continueContainer" class="w-full mb-3">
-                    <button id="continueBtn" onclick="buyContinue()" class="btn-bounce w-full bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-game py-3 px-4 rounded-2xl shadow-md border border-red-300 flex items-center justify-between">
+                    <button id="continueBtn" onclick="buyContinue()" class="btn-bounce w-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-game py-3 px-4 rounded-2xl shadow-md border border-amber-300 flex items-center justify-between">
                         <span class="flex items-center gap-2">
-                            <i class="fa-solid fa-heart text-pink-200 text-lg"></i>
+                            <i class="fa-solid fa-heart text-red-200 text-lg"></i>
                             <span>CONTINUE?</span>
                         </span>
                         <span class="bg-black/20 px-3 py-1 rounded-xl text-sm flex items-center gap-1">
-                            <i class="fa-solid fa-gift text-amber-200"></i>
+                            <i class="fa-solid fa-gift text-red-200"></i>
                             <span id="continueCostText">50</span>
                         </span>
                     </button>
@@ -251,8 +234,8 @@
                     <button onclick="closeModal('shopModal')" class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold">✕</button>
                 </div>
 
-                <div class="bg-red-50/90 my-3 px-4 py-2 rounded-2xl border border-red-200 flex justify-between items-center">
-                    <span class="text-xs font-bold text-red-800 uppercase">Your Presents</span>
+                <div class="bg-amber-100/80 my-3 px-4 py-2 rounded-2xl border border-amber-200 flex justify-between items-center">
+                    <span class="text-xs font-bold text-amber-800 uppercase">Your Balance</span>
                     <div class="flex items-center gap-1.5 font-game text-lg text-red-600">
                         <i class="fa-solid fa-gift"></i>
                         <span id="shopStarBalance">0</span>
@@ -272,14 +255,14 @@
             <div class="glass-panel w-full max-w-lg mx-auto h-full rounded-3xl p-5 pb-8 flex flex-col justify-between overflow-hidden">
                 <div class="flex justify-between items-center pb-3 border-b border-slate-200">
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-trophy text-emerald-600 text-xl"></i>
+                        <i class="fa-solid fa-trophy text-indigo-500 text-xl"></i>
                         <h2 class="font-game text-2xl text-slate-800">TASKS & GOALS</h2>
                     </div>
                     <button onclick="closeModal('missionsModal')" class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold">✕</button>
                 </div>
 
                 <div class="flex gap-2 my-3">
-                    <button id="tabMissionsBtn" onclick="switchTaskTab('missions')" class="flex-1 py-2 font-game text-xs rounded-xl bg-emerald-600 text-white shadow">DAILY MISSIONS</button>
+                    <button id="tabMissionsBtn" onclick="switchTaskTab('missions')" class="flex-1 py-2 font-game text-xs rounded-xl bg-indigo-500 text-white shadow">DAILY MISSIONS</button>
                     <button id="tabAchievementsBtn" onclick="switchTaskTab('achievements')" class="flex-1 py-2 font-game text-xs rounded-xl bg-slate-200 text-slate-600">ACHIEVEMENTS</button>
                 </div>
 
@@ -291,13 +274,13 @@
             </div>
         </div>
 
-        <!-- TOUCH CONTROLS OVERLAY (Raised up to avoid navigation bars & gesture bars) -->
-        <div id="touchControls" class="absolute bottom-20 left-0 right-0 px-5 sm:px-12 flex justify-between pointer-events-none z-20" style="bottom: calc(5rem + env(safe-area-inset-bottom, 0px));">
-            <button id="leftTouchBtn" aria-label="Move Left" class="snowball-btn pointer-events-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center text-sky-900 text-3xl sm:text-4xl">
-                <i class="fa-solid fa-arrow-left drop-shadow-[0_1px_0_rgba(255,255,255,0.9)]"></i>
+        <!-- SNOWBALL TOUCH CONTROLS OVERLAY -->
+        <div id="touchControls" class="absolute bottom-20 left-0 right-0 px-6 sm:px-12 flex justify-between items-center pointer-events-none z-20" style="bottom: calc(5rem + env(safe-area-inset-bottom, 0px));">
+            <button id="leftTouchBtn" aria-label="Move Left" class="snowball-btn pointer-events-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white/95 flex items-center justify-center text-sky-900 text-3xl sm:text-4xl">
+                <i class="fa-solid fa-arrow-left drop-shadow-sm"></i>
             </button>
-            <button id="rightTouchBtn" aria-label="Move Right" class="snowball-btn pointer-events-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center text-sky-900 text-3xl sm:text-4xl">
-                <i class="fa-solid fa-arrow-right drop-shadow-[0_1px_0_rgba(255,255,255,0.9)]"></i>
+            <button id="rightTouchBtn" aria-label="Move Right" class="snowball-btn pointer-events-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white/95 flex items-center justify-center text-sky-900 text-3xl sm:text-4xl">
+                <i class="fa-solid fa-arrow-right drop-shadow-sm"></i>
             </button>
         </div>
 
@@ -310,13 +293,17 @@
         let audioCtx = null;
         let rocketSynth = null;
         let rocketGain = null;
+        let animFrameId = null;
 
         function initAudio() {
             try {
                 if (!audioCtx) {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContextClass) {
+                        audioCtx = new AudioContextClass();
+                    }
                 }
-                if (audioCtx.state === 'suspended') {
+                if (audioCtx && audioCtx.state === 'suspended') {
                     audioCtx.resume();
                 }
             } catch (e) {}
@@ -395,13 +382,11 @@
 
                         rocketSynth.start();
                     }
-                } else {
-                    if (rocketSynth) {
-                        try { rocketSynth.stop(); } catch (e) {}
-                        try { rocketSynth.disconnect(); } catch (e) {}
-                        rocketSynth = null;
-                        rocketGain = null;
-                    }
+                } else if (rocketSynth) {
+                    try { rocketSynth.stop(); } catch (e) {}
+                    try { rocketSynth.disconnect(); } catch (e) {}
+                    rocketSynth = null;
+                    rocketGain = null;
                 }
             } catch (e) {}
         }
@@ -417,7 +402,7 @@
             ],
             achievements: [
                 { id: 'a1', title: 'Sky High', desc: 'Reach a score of 100', req: 100, current: 0, reward: 50, unlocked: false, type: 'score' },
-                { id: 'a2', title: 'Gift Collector', desc: 'Collect 100 total presents', req: 100, current: 0, reward: 100, unlocked: false, type: 'totalStars' },
+                { id: 'a2', title: 'Present Collector', desc: 'Collect 100 total presents', req: 100, current: 0, reward: 100, unlocked: false, type: 'totalStars' },
                 { id: 'a3', title: 'Power-up Collector', desc: 'Unlock any powerup in shop', req: 1, current: 0, reward: 40, unlocked: false, type: 'powerupUnlocked' }
             ]
         };
@@ -427,7 +412,13 @@
                 const saved = localStorage.getItem(STORAGE_KEY);
                 if (saved) {
                     const parsed = JSON.parse(saved);
-                    userProgress = { ...userProgress, ...parsed };
+                    userProgress = {
+                        ...userProgress,
+                        ...parsed,
+                        upgrades: { ...userProgress.upgrades, ...(parsed.upgrades || {}) },
+                        missions: Array.isArray(parsed.missions) ? parsed.missions : userProgress.missions,
+                        achievements: Array.isArray(parsed.achievements) ? parsed.achievements : userProgress.achievements
+                    };
                 }
             } catch (e) {}
             updateMenuUI();
@@ -441,25 +432,23 @@
         }
 
         const POWERUPS_CONFIG = {
-            magnet: { name: 'Gift Magnet', icon: 'fa-magnet', bgColor: 'bg-red-500', costs: [50, 100, 200], durations: [600, 900, 1200], desc: 'Attracts nearby Christmas presents automatically.' },
-            shield: { name: 'Snow Shield', icon: 'fa-shield-halved', bgColor: 'bg-cyan-500', costs: [60, 120, 250], durations: [1, 1, 2], desc: 'Protects you from falling once or twice.' },
+            magnet: { name: 'Present Magnet', icon: 'fa-magnet', bgColor: 'bg-red-500', costs: [50, 100, 200], durations: [600, 900, 1200], desc: 'Attracts nearby wrapped presents automatically.' },
+            shield: { name: 'Cloud Shield', icon: 'fa-shield-halved', bgColor: 'bg-cyan-500', costs: [60, 120, 250], durations: [1, 1, 2], desc: 'Protects you from falling once or twice.' },
             spring: { name: 'Super Boots', icon: 'fa-shoe-prints', bgColor: 'bg-emerald-500', costs: [40, 80, 150], durations: [1, 2, 3], desc: 'Allows mid-air double jumps!' },
-            rocket: { name: 'Tree Boost', image: 'tree.png', icon: 'fa-tree', bgColor: 'bg-emerald-600', costs: [100, 200, 400], durations: [180, 270, 360], desc: 'Blasts you high into the snowy sky safely.' }
+            rocket: { name: 'Holiday Tree Boost', icon: 'fa-tree', bgColor: 'bg-amber-500', costs: [100, 200, 400], durations: [180, 270, 360], desc: 'Blasts you high into the snowy sky safely.' }
         };
 
-        // Festive wrapping styles for Christmas presents
-        const PRESENT_STYLES = [
-            { box: '#ef4444', dark: '#b91c1c', ribbon: '#fef08a', bow: '#fde047' }, // Festive Red + Gold Ribbon
-            { box: '#10b981', dark: '#047857', ribbon: '#fecaca', bow: '#f87171' }, // Emerald Green + Red Ribbon
-            { box: '#3b82f6', dark: '#1d4ed8', ribbon: '#e0f2fe', bow: '#bae6fd' }, // Royal Blue + Frost Ribbon
-            { box: '#ec4899', dark: '#be185d', ribbon: '#fef9c3', bow: '#fde047' }, // Holiday Berry + Gold Ribbon
-            { box: '#f59e0b', dark: '#b45309', ribbon: '#dcfce7', bow: '#86efac' }  // Golden Wrap + Mint Ribbon
+        const PRESENT_PALETTES = [
+            { box: '#ef4444', ribbon: '#fde047', bow: '#fef08a' },
+            { box: '#10b981', ribbon: '#ef4444', bow: '#fca5a5' },
+            { box: '#3b82f6', ribbon: '#facc15', bow: '#fef08a' },
+            { box: '#a855f7', ribbon: '#ffffff', bow: '#e2e8f0' },
+            { box: '#f97316', ribbon: '#fef08a', bow: '#fde047' }
         ];
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Keep all existing external image references with safe fallbacks
         const imgRed = new Image(); imgRed.src = 'red.png';
         const imgBlue = new Image(); imgBlue.src = 'blue.png';
         const imgPurple = new Image(); imgPurple.src = 'purple.png';
@@ -478,8 +467,6 @@
         let continueCost = 50;
         let activePowerups = { magnetTimer: 0, shieldHits: 0, doubleJumps: 0, rocketTimer: 0 };
         let showTouchControls = true;
-        let animFrameId = null;
-        let snowTime = 0;
 
         const player = {
             x: 0, y: 0,
@@ -496,110 +483,87 @@
         let powerupItems = [];
         let particles = [];
         let clouds = [];
-        let snowLayers = {
-            far: [],
-            middle: [],
-            close: []
-        };
+        let snowLayers = { far: [], mid: [], near: [] };
 
         const keys = { left: false, right: false };
 
-        // Create three-layer parallax snowfall (far tiny dots, middle medium flakes, close large soft flakes)
+        function stopAnimationLoop() {
+            if (animFrameId !== null) {
+                cancelAnimationFrame(animFrameId);
+                animFrameId = null;
+            }
+        }
+
+        function startAnimationLoop() {
+            stopAnimationLoop();
+            animFrameId = requestAnimationFrame(render);
+        }
+
         function initSnowLayers() {
             const w = Math.max(canvas.width, 320);
             const h = Math.max(canvas.height, 480);
-            const areaFactor = Math.max(0.75, Math.min(1.6, (w * h) / (420 * 780)));
 
-            const farCount = Math.round(55 * areaFactor);
-            const middleCount = Math.round(35 * areaFactor);
-            const closeCount = Math.round(18 * areaFactor);
-
-            snowLayers.far = Array.from({ length: farCount }, () => ({
+            snowLayers.far = Array.from({ length: 42 }, () => ({
                 x: Math.random() * w,
                 y: Math.random() * h,
-                r: 1.2 + Math.random() * 1.0, // ~1.2 - 2.2px tiny dots
-                vy: 0.55 + Math.random() * 0.45,
-                swayAmp: 0.25 + Math.random() * 0.35,
-                swayFreq: 0.012 + Math.random() * 0.012,
+                radius: 1.2 + Math.random() * 0.9,
+                vy: 0.45 + Math.random() * 0.4,
+                drift: (Math.random() - 0.5) * 0.25,
                 phase: Math.random() * Math.PI * 2,
-                alpha: 0.45 + Math.random() * 0.2 // ~0.45 - 0.65
+                alpha: 0.55
             }));
 
-            snowLayers.middle = Array.from({ length: middleCount }, () => ({
+            snowLayers.mid = Array.from({ length: 28 }, () => ({
                 x: Math.random() * w,
                 y: Math.random() * h,
-                r: 2.8 + Math.random() * 1.7, // ~2.8 - 4.5px medium flakes
-                vy: 1.25 + Math.random() * 0.75,
-                swayAmp: 0.7 + Math.random() * 0.65,
-                swayFreq: 0.018 + Math.random() * 0.015,
+                radius: 2.6 + Math.random() * 1.4,
+                vy: 1.15 + Math.random() * 0.75,
+                drift: (Math.random() - 0.5) * 0.6,
                 phase: Math.random() * Math.PI * 2,
-                alpha: 0.7 + Math.random() * 0.15 // ~0.70 - 0.85
+                alpha: 0.8
             }));
 
-            snowLayers.close = Array.from({ length: closeCount }, () => ({
+            snowLayers.near = Array.from({ length: 16 }, () => ({
                 x: Math.random() * w,
                 y: Math.random() * h,
-                r: 5.0 + Math.random() * 3.0, // ~5.0 - 8.0px larger soft flakes
-                vy: 2.4 + Math.random() * 1.3,
-                swayAmp: 1.4 + Math.random() * 1.1,
-                swayFreq: 0.025 + Math.random() * 0.018,
+                radius: 5.0 + Math.random() * 2.5,
+                vy: 2.3 + Math.random() * 1.2,
+                drift: (Math.random() - 0.5) * 1.1,
                 phase: Math.random() * Math.PI * 2,
-                alpha: 0.85 + Math.random() * 0.1 // ~0.85 - 0.95
+                alpha: 0.95
             }));
         }
 
-        function wrapSnowFlake(flake, w, h) {
-            const margin = flake.r * 2 + 8;
-            if (flake.y > h + margin) {
-                flake.y = -margin;
-                flake.x = Math.random() * w;
-            } else if (flake.y < -margin * 2) {
-                flake.y = h + margin;
-            }
-            if (flake.x > w + margin) {
-                flake.x = -margin;
-            } else if (flake.x < -margin) {
-                flake.x = w + margin;
-            }
-        }
+        function updateSnowFlakes(flakes, w, h) {
+            flakes.forEach(f => {
+                f.phase += 0.025;
+                f.x += f.drift + Math.sin(f.phase) * 0.35;
+                f.y += f.vy;
 
-        function updateSnowLayers() {
-            const w = canvas.width;
-            const h = canvas.height;
-            if (w <= 0 || h <= 0) return;
-
-            snowTime += 1;
-
-            const allLayers = [snowLayers.far, snowLayers.middle, snowLayers.close];
-            for (let i = 0; i < allLayers.length; i++) {
-                const layer = allLayers[i];
-                for (let j = 0; j < layer.length; j++) {
-                    const f = layer[j];
-                    f.y += f.vy;
-                    f.x += Math.sin(snowTime * f.swayFreq + f.phase) * f.swayAmp;
-                    wrapSnowFlake(f, w, h);
+                if (f.y > h + f.radius * 2) {
+                    f.y = -f.radius * 2;
+                    f.x = Math.random() * w;
                 }
-            }
+                if (f.x > w + f.radius * 2) {
+                    f.x = -f.radius * 2;
+                } else if (f.x < -f.radius * 2) {
+                    f.x = w + f.radius * 2;
+                }
+            });
         }
 
-        function drawSnowLayer(layer, softGlow) {
-            for (let i = 0; i < layer.length; i++) {
-                const f = layer[i];
+        function drawSnowFlakes(flakes) {
+            flakes.forEach(f => {
                 ctx.save();
                 ctx.globalAlpha = f.alpha;
                 ctx.fillStyle = '#ffffff';
-                if (softGlow) {
-                    ctx.shadowColor = 'rgba(224, 242, 254, 0.85)';
-                    ctx.shadowBlur = 6;
-                }
                 ctx.beginPath();
-                ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+                ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.restore();
-            }
+            });
         }
 
-        // Smart Touch Detection & Dynamic Touch Controls Setup
         function setupTouchDetection() {
             const isTouchCapable = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
             showTouchControls = isTouchCapable;
@@ -609,7 +573,7 @@
         function toggleTouchControls() {
             showTouchControls = !showTouchControls;
             updateTouchControlsVisibility();
-            triggerToast(showTouchControls ? 'Touch Controls Enabled' : 'Touch Controls Hidden', 'fa-gamepad');
+            triggerToast(showTouchControls ? 'Snowball Controls Enabled' : 'Snowball Controls Hidden', 'fa-gamepad');
         }
 
         function updateTouchControlsVisibility() {
@@ -624,35 +588,21 @@
             }
         }
 
-        // Full Screen Resizing & Responsive Physics Scale
         function resizeCanvas() {
             const container = document.getElementById('gameContainer');
-            const prevW = canvas.width || container.clientWidth;
-            const prevH = canvas.height || container.clientHeight;
             canvas.width = container.clientWidth;
             canvas.height = container.clientHeight;
 
-            // Scale movement speed and platform spacing dynamically for varied screen aspect ratios
             const scaleFactor = Math.max(0.85, Math.min(1.3, canvas.width / 420));
             player.moveSpeed = 5.5 * scaleFactor;
-
-            if (!snowLayers.far.length) {
-                initSnowLayers();
-            } else if (prevW > 0 && prevH > 0) {
-                const sx = canvas.width / prevW;
-                const sy = canvas.height / prevH;
-                [snowLayers.far, snowLayers.middle, snowLayers.close].forEach(layer => {
-                    layer.forEach(f => {
-                        f.x *= sx;
-                        f.y *= sy;
-                        wrapSnowFlake(f, canvas.width, canvas.height);
-                    });
-                });
-            }
 
             if (!isGameRunning && player.x === 0) {
                 player.x = canvas.width / 2 - player.width / 2;
                 player.y = canvas.height - 150;
+            }
+
+            if (!snowLayers.far.length) {
+                initSnowLayers();
             }
         }
         window.addEventListener('resize', resizeCanvas);
@@ -660,9 +610,6 @@
 
         function initGame() {
             resizeCanvas();
-            if (!snowLayers.far.length) {
-                initSnowLayers();
-            }
             cameraY = 0;
             gameScore = 0;
             sessionStars = 0;
@@ -672,6 +619,8 @@
             continueCost = 50;
             keys.left = false;
             keys.right = false;
+            document.getElementById('leftTouchBtn').classList.remove('is-pressed');
+            document.getElementById('rightTouchBtn').classList.remove('is-pressed');
 
             player.x = canvas.width / 2 - player.width / 2;
             player.y = canvas.height - 150;
@@ -690,12 +639,14 @@
             powerupItems = [];
             particles = [];
             clouds = [];
+            initSnowLayers();
 
+            // Smaller, sparse, transparent white clouds
             for (let i = 0; i < 5; i++) {
                 clouds.push({
                     x: Math.random() * canvas.width,
-                    y: Math.random() * (canvas.height * 0.65),
-                    size: 18 + Math.random() * 18,
+                    y: Math.random() * canvas.height,
+                    size: 16 + Math.random() * 14,
                     speed: 0.25 + Math.random() * 0.35
                 });
             }
@@ -725,7 +676,7 @@
             const shrinkMultiplier = Math.max(minMultiplier, 1 - (thousands * 0.05));
             const width = baseWidth * shrinkMultiplier;
 
-            const xPos = Math.random() * (canvas.width - width);
+            const xPos = Math.random() * Math.max(20, canvas.width - width);
 
             let pType = 'standard';
             const rand = Math.random();
@@ -745,14 +696,14 @@
             platforms.push(platform);
 
             if (Math.random() < 0.5) {
-                const styleIndex = Math.floor(Math.random() * PRESENT_STYLES.length);
+                const palette = PRESENT_PALETTES[Math.floor(Math.random() * PRESENT_PALETTES.length)];
                 starsList.push({
                     x: xPos + width / 2 - 11,
                     y: yPos - 32,
                     width: 22, height: 22,
-                    styleIndex: styleIndex,
                     collected: false,
-                    rotation: Math.random() * Math.PI
+                    rotation: Math.random() * Math.PI,
+                    palette: palette
                 });
             }
 
@@ -769,9 +720,13 @@
         }
 
         function update() {
-            updateSnowLayers();
-
             if (!isGameRunning || isPaused) return;
+
+            updateSnowFlakes(snowLayers.far, canvas.width, canvas.height);
+            updateSnowFlakes(snowLayers.mid, canvas.width, canvas.height);
+            updateSnowFlakes(snowLayers.near, canvas.width, canvas.height);
+
+            const prevBottom = player.y + player.height;
 
             if (activePowerups.rocketTimer > 0) {
                 activePowerups.rocketTimer--;
@@ -799,6 +754,7 @@
             if (player.x > canvas.width) player.x = -player.width;
 
             player.y += player.vy;
+            const currBottom = player.y + player.height;
 
             const targetCamY = canvas.height * 0.4 - player.y;
             if (targetCamY > cameraY) {
@@ -810,20 +766,24 @@
                 }
             }
 
+            // Swept vertical platform landing check to prevent tunneling after continue/retry
             if (player.vy > 0 && activePowerups.rocketTimer <= 0) {
-                const prevBottom = player.y + player.height - player.vy;
-                const currBottom = player.y + player.height;
-                platforms.forEach(p => {
-                    if (!p.broken &&
-                        player.x + player.width > p.x &&
-                        player.x < p.x + p.width &&
-                        prevBottom <= p.y + 4 &&
-                        currBottom >= p.y) {
+                for (let i = 0; i < platforms.length; i++) {
+                    const p = platforms[i];
+                    if (p.broken) continue;
 
+                    const overlapsHorizontally =
+                        player.x + player.width > p.x + 4 &&
+                        player.x < p.x + p.width - 4;
+                    const crossedPlatformTop =
+                        prevBottom <= p.y + 8 &&
+                        currBottom >= p.y;
+
+                    if (overlapsHorizontally && crossedPlatformTop) {
                         player.y = p.y - player.height;
                         player.vy = player.jumpStrength;
                         playBounceSound();
-                        createParticles(player.x + player.width / 2, player.y + player.height, '#ffffff', 5);
+                        createParticles(player.x + player.width / 2, p.y, '#ffffff', 5);
 
                         if (p.type === 'fragile') {
                             p.hits++;
@@ -834,14 +794,21 @@
                         }
 
                         increaseCombo();
+                        break;
                     }
-                });
+                }
             }
 
             platforms.forEach(p => {
                 if (p.type === 'moving') {
                     p.x += p.vx;
-                    if (p.x <= 0 || p.x + p.width >= canvas.width) p.vx *= -1;
+                    if (p.x <= 0) {
+                        p.x = 0;
+                        p.vx = Math.abs(p.vx);
+                    } else if (p.x + p.width >= canvas.width) {
+                        p.x = canvas.width - p.width;
+                        p.vx = -Math.abs(p.vx);
+                    }
                 }
             });
 
@@ -852,7 +819,7 @@
                         const dx = (player.x + player.width / 2) - (s.x + s.width / 2);
                         const dy = (player.y + player.height / 2) - (s.y + s.height / 2);
                         const dist = Math.hypot(dx, dy);
-                        if (dist < 220 && dist > 0.01) {
+                        if (dist < 220 && dist > 0.001) {
                             s.x += (dx / dist) * 8;
                             s.y += (dy / dist) * 8;
                         }
@@ -862,7 +829,7 @@
 
             starsList.forEach(s => {
                 if (!s.collected) {
-                    s.rotation += 0.04;
+                    s.rotation += 0.05;
                     if (player.x < s.x + s.width &&
                         player.x + player.width > s.x &&
                         player.y < s.y + s.height &&
@@ -873,9 +840,7 @@
                         const gained = 1 * comboMultiplier;
                         sessionStars += gained;
                         userProgress.stars += gained;
-                        const presentColor = PRESENT_STYLES[s.styleIndex % PRESENT_STYLES.length].box;
-                        createParticles(s.x + s.width / 2, s.y + s.height / 2, presentColor, 9);
-                        createParticles(s.x + s.width / 2, s.y + s.height / 2, '#fef08a', 4);
+                        createParticles(s.x + s.width / 2, s.y + s.height / 2, s.palette ? s.palette.box : '#ef4444', 8);
                         saveData();
                         checkMissionsProgress('stars', sessionStars);
                     }
@@ -893,7 +858,7 @@
                     if (item.type === 'magnet') activePowerups.magnetTimer = POWERUPS_CONFIG.magnet.durations[userProgress.upgrades.magnet || 0];
                     if (item.type === 'rocket') activePowerups.rocketTimer = POWERUPS_CONFIG.rocket.durations[userProgress.upgrades.rocket || 0];
                     playCoinSound();
-                    triggerToast(`Activated ${item.type.toUpperCase()}!`, 'fa-bolt');
+                    triggerToast(`Activated ${POWERUPS_CONFIG[item.type]?.name || item.type.toUpperCase()}!`, 'fa-bolt');
                 }
             });
 
@@ -943,6 +908,7 @@
         }
 
         function performDoubleJump() {
+            if (!isGameRunning || isPaused) return;
             if (activePowerups.doubleJumps > 0) {
                 activePowerups.doubleJumps--;
                 player.vy = player.jumpStrength * 1.1;
@@ -964,63 +930,14 @@
             }
         }
 
-        function drawChristmasPresent(x, y, w, h, styleIndex, tiltAngle) {
-            const style = PRESENT_STYLES[styleIndex % PRESENT_STYLES.length];
-            const cx = x + w / 2;
-            const cy = y + h / 2;
-
-            ctx.save();
-            ctx.translate(cx, cy);
-            ctx.rotate(tiltAngle * 0.14);
-
-            // Box body
-            ctx.fillStyle = style.box;
-            ctx.strokeStyle = style.dark;
-            ctx.lineWidth = 1.6;
-            ctx.beginPath();
-            ctx.roundRect(-w / 2, -h / 2 + 3, w, h - 3, 4);
-            ctx.fill();
-            ctx.stroke();
-
-            // Lid cap
-            ctx.fillStyle = style.box;
-            ctx.beginPath();
-            ctx.roundRect(-w / 2 - 1.5, -h / 2 + 1, w + 3, 6, 3);
-            ctx.fill();
-            ctx.stroke();
-
-            // Vertical & horizontal ribbons
-            ctx.fillStyle = style.ribbon;
-            ctx.fillRect(-2.5, -h / 2 + 1, 5, h - 1);
-            ctx.fillRect(-w / 2, -2, w, 4);
-
-            // Festive bow loops on top
-            ctx.strokeStyle = style.bow;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.ellipse(-4.5, -h / 2 - 1, 4.5, 2.8, -0.35, 0, Math.PI * 2);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.ellipse(4.5, -h / 2 - 1, 4.5, 2.8, 0.35, 0, Math.PI * 2);
-            ctx.stroke();
-
-            ctx.fillStyle = style.bow;
-            ctx.beginPath();
-            ctx.arc(0, -h / 2 - 1, 2.2, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.restore();
-        }
-
-        // Render function: draws 3-layer snow, transparent clouds, platforms, presents, particles, and character
         function render() {
+            animFrameId = null;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Layer 1: Far snow (tiny dots, slow drift, low opacity)
-            drawSnowLayer(snowLayers.far, false);
+            // Distant tiny snow dots
+            drawSnowFlakes(snowLayers.far);
 
-            // Soft, subtle white clouds in background
+            // Smaller, sparse, transparent white clouds
             clouds.forEach(c => {
                 c.x += c.speed;
                 if (c.x > canvas.width + 60) {
@@ -1029,15 +946,14 @@
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.24)';
                 ctx.beginPath();
                 ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
-                ctx.arc(c.x + c.size * 0.55, c.y - c.size * 0.15, c.size * 0.62, 0, Math.PI * 2);
-                ctx.arc(c.x - c.size * 0.55, c.y - c.size * 0.15, c.size * 0.62, 0, Math.PI * 2);
+                ctx.arc(c.x + c.size * 0.6, c.y - c.size * 0.2, c.size * 0.7, 0, Math.PI * 2);
+                ctx.arc(c.x - c.size * 0.6, c.y - c.size * 0.2, c.size * 0.7, 0, Math.PI * 2);
                 ctx.fill();
             });
 
-            // Layer 2: Middle snow (medium flakes, moderate speed & sway)
-            drawSnowLayer(snowLayers.middle, false);
+            // Middle-layer snow
+            drawSnowFlakes(snowLayers.mid);
 
-            // World-space gameplay entities
             ctx.save();
             ctx.translate(0, cameraY);
 
@@ -1058,37 +974,67 @@
                 }
             });
 
-            // Colorful Christmas presents instead of coins
+            // Multi-colored wrapped Christmas presents with ribbons and bows
             starsList.forEach(s => {
                 if (!s.collected) {
-                    drawChristmasPresent(s.x, s.y, s.width, s.height, s.styleIndex, Math.sin(s.rotation));
+                    const palette = s.palette || PRESENT_PALETTES[0];
+                    const cx = s.x + s.width / 2;
+                    const cy = s.y + s.height / 2;
+
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.scale(Math.cos(s.rotation), 1);
+
+                    // Present box body
+                    ctx.fillStyle = palette.box;
+                    ctx.strokeStyle = 'rgba(15, 23, 42, 0.35)';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.roundRect(-10, -8, 20, 18, 3);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Vertical & horizontal ribbons
+                    ctx.fillStyle = palette.ribbon;
+                    ctx.fillRect(-2.5, -8, 5, 18);
+                    ctx.fillRect(-10, -1.5, 20, 3.5);
+
+                    // Ribbon bow loops
+                    ctx.strokeStyle = palette.bow;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.ellipse(-4.5, -10.5, 4, 2.5, -0.35, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.ellipse(4.5, -10.5, 4, 2.5, 0.35, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    ctx.restore();
                 }
             });
 
+            // Power-up pickups (tree.png at double size 48x60 for rocket)
             powerupItems.forEach(item => {
                 if (!item.collected) {
                     if (item.type === 'rocket') {
-                        const drawW = 28;
-                        const drawH = 38;
-                        const drawX = item.x + item.width / 2 - drawW / 2;
-                        const drawY = item.y + item.height / 2 - drawH / 2;
-
                         if (imgTree.complete && imgTree.naturalWidth !== 0) {
-                            ctx.save();
-                            ctx.shadowColor = 'rgba(250, 204, 21, 0.55)';
-                            ctx.shadowBlur = 8;
-                            ctx.drawImage(imgTree, drawX, drawY, drawW, drawH);
-                            ctx.restore();
+                            const treeW = 48;
+                            const treeH = 60;
+                            ctx.drawImage(
+                                imgTree,
+                                item.x + item.width / 2 - treeW / 2,
+                                item.y + item.height / 2 - treeH / 2,
+                                treeW,
+                                treeH
+                            );
                         } else {
-                            ctx.save();
-                            ctx.font = '28px serif';
+                            ctx.font = '44px serif';
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
                             ctx.fillText('🎄', item.x + item.width / 2, item.y + item.height / 2);
-                            ctx.restore();
                         }
                     } else {
-                        ctx.fillStyle = item.type === 'magnet' ? '#ef4444' : '#f59e0b';
+                        ctx.fillStyle = '#ef4444';
                         ctx.beginPath();
                         ctx.arc(item.x + 12, item.y + 12, 12, 0, Math.PI * 2);
                         ctx.fill();
@@ -1110,29 +1056,24 @@
                 ctx.restore();
             });
 
+            // Character sprite: man.png at 1.5x player dimensions, bullet.png at 2x player dimensions
             const isRocketActive = activePowerups.rocketTimer > 0;
             const activeSprite = isRocketActive ? imgBullet : imgMan;
-            const spriteScale = isRocketActive ? 2 : 1.5; // 25% smaller than 2x for man.png, 2x for bullet.png
-            const spriteDrawWidth = player.width * spriteScale;
-            const spriteDrawHeight = player.height * spriteScale;
+            const spriteScale = isRocketActive ? 2 : 1.5;
+            const drawWidth = player.width * spriteScale;
+            const drawHeight = player.height * spriteScale;
 
             if (activeSprite.complete && activeSprite.naturalWidth !== 0) {
                 ctx.save();
                 ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
                 if (!player.facingRight) ctx.scale(-1, 1);
-                ctx.drawImage(activeSprite, -spriteDrawWidth / 2, -spriteDrawHeight / 2, spriteDrawWidth, spriteDrawHeight);
+                ctx.drawImage(activeSprite, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
                 ctx.restore();
             } else {
-                ctx.save();
-                ctx.font = `${Math.round(34 * spriteScale)}px serif`;
+                ctx.font = isRocketActive ? '52px serif' : '40px serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(
-                    isRocketActive ? '🚀' : '🎅',
-                    player.x + player.width / 2,
-                    player.y + player.height / 2
-                );
-                ctx.restore();
+                ctx.fillText(isRocketActive ? '🚀' : '🎅', player.x + player.width / 2, player.y + player.height / 2);
             }
 
             if (activePowerups.shieldHits > 0) {
@@ -1145,15 +1086,11 @@
 
             ctx.restore();
 
-            // Layer 3: Close snow (large soft flakes in foreground, faster fall & noticeable drift)
-            drawSnowLayer(snowLayers.close, true);
+            // Close foreground snow layer
+            drawSnowFlakes(snowLayers.near);
 
             if (isGameRunning && !isPaused) {
                 update();
-                animFrameId = requestAnimationFrame(render);
-            } else if (!isGameRunning) {
-                // Keep gentle snowfall alive on menus/overlays
-                updateSnowLayers();
                 animFrameId = requestAnimationFrame(render);
             }
         }
@@ -1176,16 +1113,21 @@
             if (activePowerups.magnetTimer > 0) pContainer.appendChild(createHudBadge('fa-magnet', 'bg-red-500', `${Math.ceil(activePowerups.magnetTimer / 60)}s`));
             if (activePowerups.shieldHits > 0) pContainer.appendChild(createHudBadge('fa-shield-halved', 'bg-cyan-500', `${activePowerups.shieldHits} Hits`));
             if (activePowerups.doubleJumps > 0) pContainer.appendChild(createHudBadge('fa-shoe-prints', 'bg-emerald-500', `${activePowerups.doubleJumps} Jumps`));
-            if (activePowerups.rocketTimer > 0) pContainer.appendChild(createHudBadge('fa-tree', 'bg-emerald-600', `${Math.ceil(activePowerups.rocketTimer / 60)}s`, 'tree.png'));
+            if (activePowerups.rocketTimer > 0) pContainer.appendChild(createRocketHudBadge(`${Math.ceil(activePowerups.rocketTimer / 60)}s`));
         }
 
-        function createHudBadge(iconClass, bgColor, text, imageSrc = null) {
+        function createHudBadge(iconClass, bgColor, text) {
             const div = document.createElement('div');
             div.className = `${bgColor} text-white px-2.5 py-1 rounded-xl text-xs font-game flex items-center gap-1.5 shadow-md`;
-            const visualHtml = imageSrc
-                ? `<img src="${imageSrc}" alt="" onerror="this.onerror=null; this.outerHTML='<i class=\\'fa-solid ${iconClass}\\'></i>';" class="w-4 h-4 object-contain drop-shadow-sm">`
-                : `<i class="fa-solid ${iconClass}"></i>`;
-            div.innerHTML = `${visualHtml}<span>${text}</span>`;
+            div.innerHTML = `<i class="fa-solid ${iconClass}"></i><span>${text}</span>`;
+            return div;
+        }
+
+        function createRocketHudBadge(text) {
+            const div = document.createElement('div');
+            div.className = 'bg-amber-500 text-white px-3 py-1.5 rounded-2xl text-xs font-game flex items-center gap-2 shadow-md';
+            const iconHtml = `<img src="tree.png" alt="Tree Boost" onerror="this.onerror=null; this.outerHTML='<span class=\\'text-xl leading-none\\'>🎄</span>';" class="w-10 h-12 object-contain shrink-0">`;
+            div.innerHTML = `${iconHtml}<span>${text}</span>`;
             return div;
         }
 
@@ -1207,14 +1149,17 @@
                 const isMax = currentLevel >= conf.costs.length;
                 const cost = isMax ? 'MAX' : conf.costs[currentLevel];
 
+                const isRocket = key === 'rocket';
+                const iconBoxClass = isRocket ? 'w-20 h-20' : 'w-12 h-12 text-xl';
+                const iconContent = isRocket
+                    ? `<img src="tree.png" alt="Holiday Tree" onerror="this.onerror=null; this.outerHTML='<span class=\\'text-4xl leading-none\\'>🎄</span>';" class="w-16 h-20 object-contain">`
+                    : `<i class="fa-solid ${conf.icon}"></i>`;
+
                 const card = document.createElement('div');
                 card.className = 'bg-white/90 p-3.5 rounded-2xl shadow border border-slate-100 flex items-center justify-between gap-3';
-                const iconContent = conf.image
-                    ? `<img src="${conf.image}" alt="${conf.name}" onerror="this.onerror=null; this.outerHTML='<i class=\\'fa-solid ${conf.icon}\\'></i>';" class="w-9 h-9 object-contain drop-shadow-sm">`
-                    : `<i class="fa-solid ${conf.icon}"></i>`;
                 card.innerHTML = `
                     <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-2xl ${conf.bgColor} text-white flex items-center justify-center text-xl shadow-md">
+                        <div class="${iconBoxClass} rounded-2xl ${conf.bgColor} text-white flex items-center justify-center shadow-md shrink-0">
                             ${iconContent}
                         </div>
                         <div>
@@ -1227,8 +1172,8 @@
                             </div>
                         </div>
                     </div>
-                    <button onclick="buyPowerup('${key}')" ${isMax || userProgress.stars < cost ? 'disabled' : ''} 
-                            class="btn-bounce px-3 py-2 rounded-xl font-game text-xs flex items-center gap-1 ${isMax ? 'bg-slate-200 text-slate-400' : 'bg-red-500 hover:bg-red-600 text-white shadow-md disabled:opacity-50'}">
+                    <button onclick="buyPowerup('${key}')" ${isMax || userProgress.stars < cost ? 'disabled' : ''}
+                            class="btn-bounce px-3 py-2 rounded-xl font-game text-xs flex items-center gap-1 shrink-0 ${isMax ? 'bg-slate-200 text-slate-400' : 'bg-amber-400 hover:bg-amber-500 text-white shadow-md disabled:opacity-50'}">
                         ${isMax ? 'MAXED' : `<i class="fa-solid fa-gift"></i> ${cost}`}
                     </button>
                 `;
@@ -1267,7 +1212,7 @@
                         <div class="font-game text-slate-800 text-xs">${item.title}</div>
                         <div class="text-[10px] text-slate-500">${item.desc || `Target: ${item.req}`}</div>
                         <div class="w-full bg-slate-200 h-2 rounded-full mt-2 overflow-hidden">
-                            <div class="bg-emerald-500 h-full rounded-full" style="width: ${Math.min(100, (item.current / item.req) * 100)}%"></div>
+                            <div class="bg-indigo-500 h-full rounded-full" style="width: ${Math.min(100, (item.current / item.req) * 100)}%"></div>
                         </div>
                     </div>
                     <button ${isDone || item.current < item.req ? 'disabled' : ''} onclick="claimReward('${item.id}', '${activeTab}')"
@@ -1281,8 +1226,8 @@
 
         function switchTaskTab(tab) {
             window.currentTaskTab = tab;
-            document.getElementById('tabMissionsBtn').className = `flex-1 py-2 font-game text-xs rounded-xl ${tab === 'missions' ? 'bg-emerald-600 text-white shadow' : 'bg-slate-200 text-slate-600'}`;
-            document.getElementById('tabAchievementsBtn').className = `flex-1 py-2 font-game text-xs rounded-xl ${tab === 'achievements' ? 'bg-emerald-600 text-white shadow' : 'bg-slate-200 text-slate-600'}`;
+            document.getElementById('tabMissionsBtn').className = `flex-1 py-2 font-game text-xs rounded-xl ${tab === 'missions' ? 'bg-indigo-500 text-white shadow' : 'bg-slate-200 text-slate-600'}`;
+            document.getElementById('tabAchievementsBtn').className = `flex-1 py-2 font-game text-xs rounded-xl ${tab === 'achievements' ? 'bg-indigo-500 text-white shadow' : 'bg-slate-200 text-slate-600'}`;
             renderMissions();
         }
 
@@ -1311,29 +1256,24 @@
 
         function startGame() {
             initAudio();
-            if (animFrameId) {
-                cancelAnimationFrame(animFrameId);
-                animFrameId = null;
-            }
             document.getElementById('startOverlay').classList.add('hidden');
             document.getElementById('gameOverOverlay').classList.add('hidden');
             document.getElementById('pauseOverlay').classList.add('hidden');
             isGameRunning = true;
             isPaused = false;
             initGame();
-            render();
+            startAnimationLoop();
         }
 
         function togglePause() {
             if (!isGameRunning) return;
             isPaused = !isPaused;
             document.getElementById('pauseOverlay').classList.toggle('hidden', !isPaused);
-            if (!isPaused) {
-                if (animFrameId) {
-                    cancelAnimationFrame(animFrameId);
-                    animFrameId = null;
-                }
-                render();
+            if (isPaused) {
+                stopAnimationLoop();
+                updateRocketSound(false);
+            } else {
+                startAnimationLoop();
             }
         }
 
@@ -1344,6 +1284,7 @@
             isPaused = false;
             keys.left = false;
             keys.right = false;
+            stopAnimationLoop();
             updateRocketSound(false);
             document.getElementById('startOverlay').classList.remove('hidden');
             document.getElementById('pauseOverlay').classList.add('hidden');
@@ -1355,6 +1296,7 @@
             isGameRunning = false;
             keys.left = false;
             keys.right = false;
+            stopAnimationLoop();
             updateRocketSound(false);
             if (gameScore > userProgress.highScore) {
                 userProgress.highScore = gameScore;
@@ -1386,29 +1328,30 @@
                 continueCost *= 2;
                 saveData();
 
-                if (animFrameId) {
-                    cancelAnimationFrame(animFrameId);
-                    animFrameId = null;
-                }
+                const safePlatformW = 140;
+                const safePlatformH = 26;
+                const safePlatformY = -cameraY + canvas.height * 0.58;
 
                 player.x = canvas.width / 2 - player.width / 2;
+                player.y = safePlatformY - player.height - 8;
                 player.vx = 0;
-                player.y = -cameraY + canvas.height / 2;
                 player.vy = player.jumpStrength;
 
-                const safetyWidth = Math.min(150, Math.max(110, canvas.width * 0.28));
                 platforms.push({
-                    x: canvas.width / 2 - safetyWidth / 2,
-                    y: player.y + player.height + 6,
-                    width: safetyWidth, height: 26,
-                    type: 'standard', hits: 0, broken: false
+                    x: canvas.width / 2 - safePlatformW / 2,
+                    y: safePlatformY,
+                    width: safePlatformW,
+                    height: safePlatformH,
+                    type: 'standard',
+                    hits: 0,
+                    broken: false
                 });
 
                 document.getElementById('gameOverOverlay').classList.add('hidden');
                 isGameRunning = true;
                 isPaused = false;
                 triggerToast('Respawned with Extra Life!', 'fa-heart');
-                render();
+                startAnimationLoop();
             }
         }
 
@@ -1431,39 +1374,62 @@
 
         // Keyboard Navigation
         window.addEventListener('keydown', e => {
-            if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = true;
-            if (e.key === 'ArrowRight' || e.key === 'd') keys.right = true;
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
             if (e.key === ' ' || e.key === 'ArrowUp') performDoubleJump();
         });
 
         window.addEventListener('keyup', e => {
-            if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = false;
-            if (e.key === 'ArrowRight' || e.key === 'd') keys.right = false;
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
         });
 
         window.addEventListener('blur', () => {
             keys.left = false;
             keys.right = false;
+            document.getElementById('leftTouchBtn').classList.remove('is-pressed');
+            document.getElementById('rightTouchBtn').classList.remove('is-pressed');
         });
 
-        // Touch Interaction Listeners for On-Screen Buttons & Tap-to-Double-Jump
+        // Touch Interaction Listeners for Snowball Buttons & Tap-to-Double-Jump
         const leftBtn = document.getElementById('leftTouchBtn');
         const rightBtn = document.getElementById('rightTouchBtn');
 
-        const clearLeft = (e) => { e.preventDefault(); keys.left = false; };
-        const clearRight = (e) => { e.preventDefault(); keys.right = false; };
+        const clearLeft = (e) => {
+            if (e) e.preventDefault();
+            keys.left = false;
+            leftBtn.classList.remove('is-pressed');
+        };
+        const clearRight = (e) => {
+            if (e) e.preventDefault();
+            keys.right = false;
+            rightBtn.classList.remove('is-pressed');
+        };
 
-        leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.left = true; keys.right = false; });
+        leftBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            initAudio();
+            keys.left = true;
+            keys.right = false;
+            leftBtn.classList.add('is-pressed');
+            rightBtn.classList.remove('is-pressed');
+        });
         leftBtn.addEventListener('touchend', clearLeft);
         leftBtn.addEventListener('touchcancel', clearLeft);
         leftBtn.addEventListener('mouseleave', clearLeft);
 
-        rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys.right = true; keys.left = false; });
+        rightBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            initAudio();
+            keys.right = true;
+            keys.left = false;
+            rightBtn.classList.add('is-pressed');
+            leftBtn.classList.remove('is-pressed');
+        });
         rightBtn.addEventListener('touchend', clearRight);
         rightBtn.addEventListener('touchcancel', clearRight);
         rightBtn.addEventListener('mouseleave', clearRight);
 
-        // Tap on Canvas for Mid-air Double Jump
         canvas.addEventListener('touchstart', (e) => {
             if (e.target !== leftBtn && e.target !== rightBtn) {
                 initAudio();
@@ -1475,9 +1441,6 @@
             loadSavedData();
             setupTouchDetection();
             resizeCanvas();
-            initSnowLayers();
-            if (animFrameId) cancelAnimationFrame(animFrameId);
-            render();
         };
     </script>
 </body>
