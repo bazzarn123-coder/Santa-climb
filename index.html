@@ -439,11 +439,11 @@
         };
 
         const PRESENT_PALETTES = [
-            { box: '#ef4444', ribbon: '#fde047', bow: '#fef08a' },
-            { box: '#10b981', ribbon: '#ef4444', bow: '#fca5a5' },
-            { box: '#3b82f6', ribbon: '#facc15', bow: '#fef08a' },
-            { box: '#a855f7', ribbon: '#ffffff', bow: '#e2e8f0' },
-            { box: '#f97316', ribbon: '#fef08a', bow: '#fde047' }
+            { boxRgb: [239, 68, 68], ribbonRgb: [253, 224, 71], bowRgb: [254, 240, 138], box: '#ef4444' },
+            { boxRgb: [16, 185, 129], ribbonRgb: [239, 68, 68], bowRgb: [252, 165, 165], box: '#10b981' },
+            { boxRgb: [59, 130, 246], ribbonRgb: [250, 204, 21], bowRgb: [254, 240, 138], box: '#3b82f6' },
+            { boxRgb: [168, 85, 247], ribbonRgb: [255, 255, 255], bowRgb: [241, 245, 249], box: '#a855f7' },
+            { boxRgb: [249, 115, 22], ribbonRgb: [254, 240, 138], bowRgb: [253, 224, 71], box: '#f97316' }
         ];
 
         const canvas = document.getElementById('gameCanvas');
@@ -564,6 +564,292 @@
             });
         }
 
+        // Shade RGB color array according to directional light factor
+        function shadeRgb(rgb, lightFactor) {
+            const r = Math.max(0, Math.min(255, Math.round(rgb[0] * lightFactor)));
+            const g = Math.max(0, Math.min(255, Math.round(rgb[1] * lightFactor)));
+            const b = Math.max(0, Math.min(255, Math.round(rgb[2] * lightFactor)));
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        // Project a 3D point (x, y, z) rotated around Y-axis (angleY) and tilted around X-axis (tiltX)
+        function project3DPoint(px, py, pz, cosY, sinY, cosX, sinX, fov) {
+            // Rotate around Y-axis
+            const x1 = px * cosY + pz * sinY;
+            const z1 = -px * sinY + pz * cosY;
+            // Tilt around X-axis so top lid is clearly visible in 3D space
+            const y2 = py * cosX - z1 * sinX;
+            const z2 = py * sinX + z1 * cosX;
+
+            const scale = fov / (fov + z2);
+            return {
+                x: x1 * scale,
+                y: y2 * scale,
+                z: z2
+            };
+        }
+
+        function drawPolygon2D(pts, fillStyle, strokeStyle, lineWidth) {
+            ctx.beginPath();
+            ctx.moveTo(pts[0].x, pts[0].y);
+            for (let i = 1; i < pts.length; i++) {
+                ctx.lineTo(pts[i].x, pts[i].y);
+            }
+            ctx.closePath();
+            if (fillStyle) {
+                ctx.fillStyle = fillStyle;
+                ctx.fill();
+            }
+            if (strokeStyle) {
+                ctx.strokeStyle = strokeStyle;
+                ctx.lineWidth = lineWidth || 1;
+                ctx.stroke();
+            }
+        }
+
+        // Render a genuine rotating 3D rectangular prism present with dynamic face lighting, ribbons, and 3D bow
+        function draw3DPresent(present) {
+            const palette = present.palette || PRESENT_PALETTES[0];
+            const cx = present.x + present.width / 2;
+            const cy = present.y + present.height / 2 + Math.sin(present.bobPhase || 0) * 1.8;
+
+            const angleY = present.rotation || 0;
+            const tiltX = 0.42 + Math.sin(angleY * 2) * 0.06; // Subtle dynamic X-tilt as it spins
+
+            const cosY = Math.cos(angleY);
+            const sinY = Math.sin(angleY);
+            const cosX = Math.cos(tiltX);
+            const sinX = Math.sin(tiltX);
+            const fov = 95;
+
+            // Half-dimensions of the 3D gift box
+            const hw = 10.5;
+            const hh = 9.0;
+            const hd = 10.5;
+            const rw = 2.4; // Half-width of wrapping ribbon
+
+            // Define 8 box vertices in local 3D coordinates (Y-down screen convention)
+            // Top vertices: y = -hh, Bottom vertices: y = +hh
+            const boxVerts3D = [
+                { x: -hw, y: -hh, z: -hd }, // 0: top-left-front
+                { x:  hw, y: -hh, z: -hd }, // 1: top-right-front
+                { x:  hw, y: -hh, z:  hd }, // 2: top-right-back
+                { x: -hw, y: -hh, z:  hd }, // 3: top-left-back
+                { x: -hw, y:  hh, z: -hd }, // 4: bottom-left-front
+                { x:  hw, y:  hh, z: -hd }, // 5: bottom-right-front
+                { x:  hw, y:  hh, z:  hd }, // 6: bottom-right-back
+                { x: -hw, y:  hh, z:  hd }  // 7: bottom-left-back
+            ];
+
+            const projVerts = boxVerts3D.map(v => project3DPoint(v.x, v.y, v.z, cosY, sinY, cosX, sinX, fov));
+
+            // Directional light vector (from upper-left-front)
+            const lightDir = { x: -0.45, y: -0.72, z: -0.52 };
+
+            // Faces of the 3D prism with outward normals and ribbon specifications
+            const faces = [
+                {
+                    name: 'front',
+                    indices: [0, 1, 5, 4],
+                    normal: { x: 0, y: 0, z: -1 },
+                    ribbonAxis: 'vertical'
+                },
+                {
+                    name: 'right',
+                    indices: [1, 2, 6, 5],
+                    normal: { x: 1, y: 0, z: 0 },
+                    ribbonAxis: 'vertical'
+                },
+                {
+                    name: 'back',
+                    indices: [2, 3, 7, 6],
+                    normal: { x: 0, y: 0, z: 1 },
+                    ribbonAxis: 'vertical'
+                },
+                {
+                    name: 'left',
+                    indices: [3, 0, 4, 7],
+                    normal: { x: -1, y: 0, z: 0 },
+                    ribbonAxis: 'vertical'
+                },
+                {
+                    name: 'top',
+                    indices: [3, 2, 1, 0],
+                    normal: { x: 0, y: -1, z: 0 },
+                    ribbonAxis: 'cross'
+                },
+                {
+                    name: 'bottom',
+                    indices: [4, 5, 6, 7],
+                    normal: { x: 0, y: 1, z: 0 },
+                    ribbonAxis: 'cross'
+                }
+            ];
+
+            // Transform normals to camera space for backface culling & directional shading
+            const visibleFaces = [];
+            faces.forEach(face => {
+                const nx1 = face.normal.x * cosY + face.normal.z * sinY;
+                const nz1 = -face.normal.x * sinY + face.normal.z * cosY;
+                const ny2 = face.normal.y * cosX - nz1 * sinX;
+                const nz2 = face.normal.y * sinX + nz1 * cosX;
+
+                // Camera looks along +Z, so faces with nz2 < 0 point toward camera
+                if (nz2 < 0.05) {
+                    const dot = nx1 * lightDir.x + ny2 * lightDir.y + nz2 * lightDir.z;
+                    const shade = Math.max(0.58, Math.min(1.22, 0.85 + dot * 0.42));
+                    const avgZ = face.indices.reduce((sum, idx) => sum + projVerts[idx].z, 0) / 4;
+                    visibleFaces.push({
+                        ...face,
+                        shade,
+                        avgZ,
+                        pts: face.indices.map(idx => projVerts[idx])
+                    });
+                }
+            });
+
+            // Painter's algorithm: sort farthest to nearest
+            visibleFaces.sort((a, b) => b.avgZ - a.avgZ);
+
+            ctx.save();
+            ctx.translate(cx, cy);
+
+            // Subtle soft drop shadow beneath floating 3D present
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.16)';
+            ctx.beginPath();
+            ctx.ellipse(0, hh + 5.5, 10, 3.2, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw each visible 3D face + its wrapping ribbon strips
+            visibleFaces.forEach(face => {
+                const boxFill = shadeRgb(palette.boxRgb, face.shade);
+                const edgeStroke = shadeRgb(palette.boxRgb, face.shade * 0.62);
+                drawPolygon2D(face.pts, boxFill, edgeStroke, 1.1);
+
+                const ribbonFill = shadeRgb(palette.ribbonRgb, face.shade);
+                const ribbonStroke = shadeRgb(palette.ribbonRgb, face.shade * 0.78);
+
+                if (face.ribbonAxis === 'vertical') {
+                    // Vertical ribbon band centered on side face
+                    let rVerts3D = [];
+                    if (face.name === 'front') {
+                        rVerts3D = [
+                            { x: -rw, y: -hh, z: -hd },
+                            { x:  rw, y: -hh, z: -hd },
+                            { x:  rw, y:  hh, z: -hd },
+                            { x: -rw, y:  hh, z: -hd }
+                        ];
+                    } else if (face.name === 'back') {
+                        rVerts3D = [
+                            { x:  rw, y: -hh, z: hd },
+                            { x: -rw, y: -hh, z: hd },
+                            { x: -rw, y:  hh, z: hd },
+                            { x:  rw, y:  hh, z: hd }
+                        ];
+                    } else if (face.name === 'right') {
+                        rVerts3D = [
+                            { x: hw, y: -hh, z: -rw },
+                            { x: hw, y: -hh, z:  rw },
+                            { x: hw, y:  hh, z:  rw },
+                            { x: hw, y:  hh, z: -rw }
+                        ];
+                    } else if (face.name === 'left') {
+                        rVerts3D = [
+                            { x: -hw, y: -hh, z:  rw },
+                            { x: -hw, y: -hh, z: -rw },
+                            { x: -hw, y:  hh, z: -rw },
+                            { x: -hw, y:  hh, z:  rw }
+                        ];
+                    }
+                    const rProj = rVerts3D.map(v => project3DPoint(v.x, v.y, v.z, cosY, sinY, cosX, sinX, fov));
+                    drawPolygon2D(rProj, ribbonFill, ribbonStroke, 0.7);
+                } else if (face.ribbonAxis === 'cross') {
+                    const yPlane = face.name === 'top' ? -hh : hh;
+                    // Strip along Z axis
+                    const stripZ = [
+                        { x: -rw, y: yPlane, z:  hd },
+                        { x:  rw, y: yPlane, z:  hd },
+                        { x:  rw, y: yPlane, z: -hd },
+                        { x: -rw, y: yPlane, z: -hd }
+                    ].map(v => project3DPoint(v.x, v.y, v.z, cosY, sinY, cosX, sinX, fov));
+
+                    // Strip along X axis
+                    const stripX = [
+                        { x: -hw, y: yPlane, z:  rw },
+                        { x:  hw, y: yPlane, z:  rw },
+                        { x:  hw, y: yPlane, z: -rw },
+                        { x: -hw, y: yPlane, z: -rw }
+                    ].map(v => project3DPoint(v.x, v.y, v.z, cosY, sinY, cosX, sinX, fov));
+
+                    drawPolygon2D(stripZ, ribbonFill, ribbonStroke, 0.6);
+                    drawPolygon2D(stripX, ribbonFill, ribbonStroke, 0.6);
+                }
+
+                // Specular rim highlight on top lid edge
+                if (face.name === 'top') {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+                    ctx.lineWidth = 1.1;
+                    ctx.beginPath();
+                    ctx.moveTo(face.pts[0].x, face.pts[0].y);
+                    ctx.lineTo(face.pts[1].x, face.pts[1].y);
+                    ctx.lineTo(face.pts[2].x, face.pts[2].y);
+                    ctx.stroke();
+                }
+            });
+
+            // 3D Ribbon Bow on top center (y = -hh) that rotates with the box
+            const bowBase = project3DPoint(0, -hh, 0, cosY, sinY, cosX, sinX, fov);
+            const bowLeftTip = project3DPoint(-6.5, -hh - 4.8, -1.8, cosY, sinY, cosX, sinX, fov);
+            const bowLeftBack = project3DPoint(-5.5, -hh - 3.6, 2.2, cosY, sinY, cosX, sinX, fov);
+            const bowRightTip = project3DPoint(6.5, -hh - 4.8, -1.8, cosY, sinY, cosX, sinX, fov);
+            const bowRightBack = project3DPoint(5.5, -hh - 3.6, 2.2, cosY, sinY, cosX, sinX, fov);
+            const bowFrontTail = project3DPoint(-2.2, -hh - 1.2, -4.5, cosY, sinY, cosX, sinX, fov);
+            const bowBackTail = project3DPoint(2.2, -hh - 1.2, 4.5, cosY, sinY, cosX, sinX, fov);
+
+            const bowLoops = [
+                {
+                    z: bowLeftTip.z,
+                    pts: [bowBase, bowLeftTip, bowLeftBack],
+                    fill: shadeRgb(palette.bowRgb, 1.08),
+                    stroke: shadeRgb(palette.ribbonRgb, 0.85)
+                },
+                {
+                    z: bowRightTip.z,
+                    pts: [bowBase, bowRightTip, bowRightBack],
+                    fill: shadeRgb(palette.bowRgb, 0.94),
+                    stroke: shadeRgb(palette.ribbonRgb, 0.8)
+                },
+                {
+                    z: bowFrontTail.z,
+                    pts: [bowBase, bowFrontTail, { x: bowFrontTail.x + 1.8, y: bowFrontTail.y + 1.5 }],
+                    fill: shadeRgb(palette.ribbonRgb, 1.05),
+                    stroke: shadeRgb(palette.ribbonRgb, 0.8)
+                },
+                {
+                    z: bowBackTail.z,
+                    pts: [bowBase, bowBackTail, { x: bowBackTail.x - 1.8, y: bowBackTail.y + 1.5 }],
+                    fill: shadeRgb(palette.ribbonRgb, 0.88),
+                    stroke: shadeRgb(palette.ribbonRgb, 0.75)
+                }
+            ];
+
+            bowLoops.sort((a, b) => b.z - a.z);
+            bowLoops.forEach(loop => {
+                drawPolygon2D(loop.pts, loop.fill, loop.stroke, 1.2);
+            });
+
+            // Center bow knot sphere
+            ctx.fillStyle = shadeRgb(palette.bowRgb, 1.12);
+            ctx.strokeStyle = shadeRgb(palette.ribbonRgb, 0.75);
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(bowBase.x, bowBase.y - 1.2, 2.4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
         function setupTouchDetection() {
             const isTouchCapable = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
             showTouchControls = isTouchCapable;
@@ -641,7 +927,7 @@
             clouds = [];
             initSnowLayers();
 
-            // Smaller, sparse, transparent white clouds
+            // Smaller, sparse, transparent white clouds (0.24 alpha)
             for (let i = 0; i < 5; i++) {
                 clouds.push({
                     x: Math.random() * canvas.width,
@@ -698,11 +984,12 @@
             if (Math.random() < 0.5) {
                 const palette = PRESENT_PALETTES[Math.floor(Math.random() * PRESENT_PALETTES.length)];
                 starsList.push({
-                    x: xPos + width / 2 - 11,
-                    y: yPos - 32,
-                    width: 22, height: 22,
+                    x: xPos + width / 2 - 12,
+                    y: yPos - 34,
+                    width: 24, height: 24,
                     collected: false,
-                    rotation: Math.random() * Math.PI,
+                    rotation: Math.random() * Math.PI * 2,
+                    bobPhase: Math.random() * Math.PI * 2,
                     palette: palette
                 });
             }
@@ -829,7 +1116,8 @@
 
             starsList.forEach(s => {
                 if (!s.collected) {
-                    s.rotation += 0.05;
+                    s.rotation += 0.045;
+                    s.bobPhase = (s.bobPhase || 0) + 0.06;
                     if (player.x < s.x + s.width &&
                         player.x + player.width > s.x &&
                         player.y < s.y + s.height &&
@@ -937,7 +1225,7 @@
             // Distant tiny snow dots
             drawSnowFlakes(snowLayers.far);
 
-            // Smaller, sparse, transparent white clouds
+            // Smaller, sparse, transparent white clouds (0.24 alpha)
             clouds.forEach(c => {
                 c.x += c.speed;
                 if (c.x > canvas.width + 60) {
@@ -974,46 +1262,14 @@
                 }
             });
 
-            // Multi-colored wrapped Christmas presents with ribbons and bows
+            // Genuine rotating 3D rectangular prism Christmas presents
             starsList.forEach(s => {
                 if (!s.collected) {
-                    const palette = s.palette || PRESENT_PALETTES[0];
-                    const cx = s.x + s.width / 2;
-                    const cy = s.y + s.height / 2;
-
-                    ctx.save();
-                    ctx.translate(cx, cy);
-                    ctx.scale(Math.cos(s.rotation), 1);
-
-                    // Present box body
-                    ctx.fillStyle = palette.box;
-                    ctx.strokeStyle = 'rgba(15, 23, 42, 0.35)';
-                    ctx.lineWidth = 1.5;
-                    ctx.beginPath();
-                    ctx.roundRect(-10, -8, 20, 18, 3);
-                    ctx.fill();
-                    ctx.stroke();
-
-                    // Vertical & horizontal ribbons
-                    ctx.fillStyle = palette.ribbon;
-                    ctx.fillRect(-2.5, -8, 5, 18);
-                    ctx.fillRect(-10, -1.5, 20, 3.5);
-
-                    // Ribbon bow loops
-                    ctx.strokeStyle = palette.bow;
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.ellipse(-4.5, -10.5, 4, 2.5, -0.35, 0, Math.PI * 2);
-                    ctx.stroke();
-                    ctx.beginPath();
-                    ctx.ellipse(4.5, -10.5, 4, 2.5, 0.35, 0, Math.PI * 2);
-                    ctx.stroke();
-
-                    ctx.restore();
+                    draw3DPresent(s);
                 }
             });
 
-            // Power-up pickups (tree.png at double size 48x60 for rocket)
+            // Power-up pickups (tree.png at 2x size 48x60 for rocket)
             powerupItems.forEach(item => {
                 if (!item.collected) {
                     if (item.type === 'rocket') {
@@ -1056,7 +1312,7 @@
                 ctx.restore();
             });
 
-            // Character sprite: man.png at 1.5x player dimensions, bullet.png at 2x player dimensions
+            // Character sprite: man.png at 1.5x scale, bullet.png at 2x scale
             const isRocketActive = activePowerups.rocketTimer > 0;
             const activeSprite = isRocketActive ? imgBullet : imgMan;
             const spriteScale = isRocketActive ? 2 : 1.5;
