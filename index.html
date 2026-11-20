@@ -146,10 +146,10 @@
                     </div>
                 </div>
 
-                <!-- Equipped Shop Item Pill -->
+                <!-- Equipped Shop Items Pill -->
                 <div id="equippedMenuBadge" class="hidden bg-white/90 px-4 py-1.5 rounded-full shadow border border-emerald-200 flex items-center gap-2 text-xs font-game text-emerald-700">
                     <i class="fa-solid fa-check-circle text-emerald-500"></i>
-                    <span id="equippedMenuText">Equipped: None</span>
+                    <span id="equippedMenuText">Ready: None</span>
                 </div>
             </div>
 
@@ -239,7 +239,10 @@
                 </div>
 
                 <div class="bg-red-50 my-3 px-4 py-2 rounded-2xl border border-red-200 flex justify-between items-center">
-                    <span class="text-xs font-bold text-red-800 uppercase">Your Presents</span>
+                    <div class="flex flex-col">
+                        <span class="text-xs font-bold text-red-800 uppercase">Your Presents</span>
+                        <span id="shopSlotCountText" class="text-[10px] font-bold text-slate-500">Slots Equipped: 0 / 2</span>
+                    </div>
                     <div class="flex items-center gap-1.5 font-game text-lg text-red-600">
                         <i class="fa-solid fa-gift"></i>
                         <span id="shopStarBalance">0</span>
@@ -249,7 +252,7 @@
                 <div class="flex-1 overflow-y-auto space-y-3 pr-1" id="shopItemsContainer"></div>
 
                 <div class="pt-3 border-t border-slate-200 text-center">
-                    <p class="text-[11px] text-slate-500 font-medium">Equip one power-up at a time from the shop!</p>
+                    <p class="text-[11px] text-slate-500 font-medium">Pick up to 2 power-ups at a time from the shop!</p>
                 </div>
             </div>
         </div>
@@ -293,6 +296,7 @@
     <!-- GAME ENGINE CODE -->
     <script>
         const STORAGE_KEY = 'santa_climb_save_v2';
+        const MAX_EQUIPPED_ITEMS = 2;
 
         let audioCtx = null;
         let rocketSynth = null;
@@ -396,7 +400,7 @@
         let userProgress = {
             stars: 0,
             highScore: 0,
-            ownedPowerup: null, // Only one single-use shop power-up can be held at a time
+            ownedPowerups: [],
             missions: [
                 { id: 'm1', title: 'Collect 15 Presents', req: 15, current: 0, reward: 20, done: false, type: 'stars' },
                 { id: 'm2', title: 'Reach 50 Height Score', req: 50, current: 0, reward: 30, done: false, type: 'score' },
@@ -415,10 +419,14 @@
                 if (saved) {
                     const parsed = JSON.parse(saved);
                     userProgress = { ...userProgress, ...parsed };
-                    // Ensure legacy saves don't keep multi-upgrades
                     if (userProgress.upgrades) {
                         delete userProgress.upgrades;
                     }
+                    if (!Array.isArray(userProgress.ownedPowerups)) {
+                        userProgress.ownedPowerups = userProgress.ownedPowerup ? [userProgress.ownedPowerup] : [];
+                    }
+                    delete userProgress.ownedPowerup;
+                    userProgress.ownedPowerups = userProgress.ownedPowerups.slice(0, MAX_EQUIPPED_ITEMS);
                 }
             } catch(e){}
             updateMenuUI();
@@ -438,7 +446,6 @@
             rocket: { name: 'Christmas Tree Boost', icon: 'fa-tree', imgSrc: 'tree.png', bgColor: 'bg-emerald-600', cost: 100, duration: 180, desc: 'Blasts Santa high into the winter sky safely.' }
         };
 
-        // Christmas Present Color Themes with 3D Shading Palette
         const PRESENT_STYLES = [
             { top: '#f87171', left: '#ef4444', right: '#b91c1c', stroke: '#7f1d1d', ribbon: '#fde047', ribbonDark: '#eab308' },
             { top: '#34d399', left: '#10b981', right: '#047857', stroke: '#064e3b', ribbon: '#f87171', ribbonDark: '#dc2626' },
@@ -588,17 +595,19 @@
             ctx.restore();
         }
 
-        function applyOwnedShopPowerup() {
-            const owned = userProgress.ownedPowerup;
-            if (!owned) return;
+        function activatePowerupKey(key) {
+            if (key === 'magnet') activePowerups.magnetTimer = POWERUPS_CONFIG.magnet.duration;
+            if (key === 'shield') activePowerups.shieldHits = POWERUPS_CONFIG.shield.duration;
+            if (key === 'spring') activePowerups.doubleJumps = POWERUPS_CONFIG.spring.duration;
+            if (key === 'rocket') activePowerups.rocketTimer = POWERUPS_CONFIG.rocket.duration;
+        }
 
-            if (owned === 'magnet') activePowerups.magnetTimer = POWERUPS_CONFIG.magnet.duration;
-            if (owned === 'shield') activePowerups.shieldHits = POWERUPS_CONFIG.shield.duration;
-            if (owned === 'spring') activePowerups.doubleJumps = POWERUPS_CONFIG.spring.duration;
-            if (owned === 'rocket') activePowerups.rocketTimer = POWERUPS_CONFIG.rocket.duration;
+        function applyOwnedShopPowerups() {
+            const ownedList = userProgress.ownedPowerups || [];
+            if (ownedList.length === 0) return;
 
-            // Consume the single-use item once activated for the run
-            userProgress.ownedPowerup = null;
+            ownedList.forEach(key => activatePowerupKey(key));
+            userProgress.ownedPowerups = [];
             saveData();
         }
 
@@ -628,7 +637,7 @@
                 rocketTimer: 0
             };
 
-            applyOwnedShopPowerup();
+            applyOwnedShopPowerups();
 
             platforms = [];
             starsList = [];
@@ -750,7 +759,6 @@
                 createParticles(player.x + player.width / 2, player.y + player.height, '#f59e0b', 2);
                 updateRocketSound(true);
 
-                // When the tree boost ends, guarantee a safe platform underneath Santa
                 if (activePowerups.rocketTimer === 0) {
                     spawnSafetyLandingPlatform();
                 }
@@ -786,7 +794,6 @@
                 }
             }
 
-            // Swept vertical collision check prevents tunneling through platforms at any fall speed
             if (player.vy > 0 && activePowerups.rocketTimer <= 0) {
                 const prevBottom = player.y + player.height - player.vy;
                 const currBottom = player.y + player.height;
@@ -867,7 +874,6 @@
                         
                         s.collected = true;
                         playCoinSound();
-                        // Each present scores exactly 1
                         const gained = 1;
                         sessionStars += gained;
                         userProgress.stars += gained;
@@ -902,7 +908,6 @@
                 }
             }
 
-            // Use a while loop so platforms always fill the sky ahead even during fast rocket boosts
             let highestP = platforms.reduce((min, p) => p.y < min ? p.y : min, canvas.height);
             while (highestP > -cameraY - 300) {
                 const nextY = highestP - (60 + Math.random() * 30);
@@ -966,7 +971,6 @@
             }
         }
 
-        // True 3D Isometric / Perspective Rotating Christmas Present
         function drawPresent(s) {
             const bobY = Math.sin(s.bobOffset) * 3;
             const style = s.style || PRESENT_STYLES[0];
@@ -1142,10 +1146,8 @@
         function render() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 1. Far distant snow (tiny slow dots)
             updateAndDrawSnow(0);
 
-            // 2. Smaller, fewer, more transparent white clouds
             clouds.forEach(c => {
                 if (!isPaused) {
                     c.x += c.speed;
@@ -1161,7 +1163,6 @@
                 ctx.fill();
             });
 
-            // 3. Mid-level snow flakes
             updateAndDrawSnow(1);
 
             ctx.save();
@@ -1190,7 +1191,6 @@
                 ctx.restore();
             });
 
-            // Draw rotating 3D Christmas presents
             starsList.forEach(s => {
                 if (!s.collected) {
                     drawPresent(s);
@@ -1268,7 +1268,6 @@
 
             ctx.restore();
 
-            // 4. Foreground close snow (large fast-falling snowflakes)
             updateAndDrawSnow(2);
 
             if (isGameRunning && !isPaused) {
@@ -1315,11 +1314,21 @@
             document.getElementById('menuTotalStars').innerText = userProgress.stars;
             document.getElementById('shopStarBalance').innerText = userProgress.stars;
 
+            const ownedList = userProgress.ownedPowerups || [];
+            const slotCountText = document.getElementById('shopSlotCountText');
+            if (slotCountText) {
+                slotCountText.innerText = `Slots Equipped: ${ownedList.length} / ${MAX_EQUIPPED_ITEMS}`;
+            }
+
             const equippedBadge = document.getElementById('equippedMenuBadge');
             const equippedText = document.getElementById('equippedMenuText');
-            if (userProgress.ownedPowerup && POWERUPS_CONFIG[userProgress.ownedPowerup]) {
+            if (ownedList.length > 0) {
+                const names = ownedList
+                    .filter(k => POWERUPS_CONFIG[k])
+                    .map(k => POWERUPS_CONFIG[k].name)
+                    .join(' + ');
                 equippedBadge.classList.remove('hidden');
-                equippedText.innerText = `Ready: ${POWERUPS_CONFIG[userProgress.ownedPowerup].name}`;
+                equippedText.innerText = `Ready: ${names}`;
             } else {
                 equippedBadge.classList.add('hidden');
             }
@@ -1332,14 +1341,15 @@
             const container = document.getElementById('shopItemsContainer');
             container.innerHTML = '';
 
-            const ownedKey = userProgress.ownedPowerup;
+            const ownedList = userProgress.ownedPowerups || [];
+            const isSlotsFull = ownedList.length >= MAX_EQUIPPED_ITEMS;
 
             Object.keys(POWERUPS_CONFIG).forEach(key => {
                 const conf = POWERUPS_CONFIG[key];
-                const isThisEquipped = ownedKey === key;
-                const isAnotherEquipped = ownedKey !== null && ownedKey !== key;
+                const isThisEquipped = ownedList.includes(key);
+                const isBlockedByCap = !isThisEquipped && isSlotsFull;
                 const canAfford = userProgress.stars >= conf.cost;
-                const isDisabled = isThisEquipped || isAnotherEquipped || !canAfford;
+                const isDisabled = isThisEquipped || isBlockedByCap || !canAfford;
 
                 const boxSize = conf.imgSrc ? 'w-20 h-20' : 'w-12 h-12';
                 const visualHtml = conf.imgSrc
@@ -1352,8 +1362,8 @@
                 if (isThisEquipped) {
                     btnLabel = `<i class="fa-solid fa-check"></i> EQUIPPED`;
                     btnClasses = 'bg-emerald-500 text-white shadow-md';
-                } else if (isAnotherEquipped) {
-                    btnLabel = `1 AT A TIME`;
+                } else if (isBlockedByCap) {
+                    btnLabel = `MAX 2 EQUIPPED`;
                     btnClasses = 'bg-slate-200 text-slate-400';
                 } else if (!canAfford) {
                     btnClasses = 'bg-red-500 text-white opacity-50';
@@ -1383,23 +1393,33 @@
         function buyPowerup(key) {
             const conf = POWERUPS_CONFIG[key];
             if (!conf) return;
-            if (userProgress.ownedPowerup !== null) {
-                triggerToast('Use your equipped item first!', 'fa-circle-exclamation');
+
+            if (!Array.isArray(userProgress.ownedPowerups)) {
+                userProgress.ownedPowerups = [];
+            }
+
+            if (userProgress.ownedPowerups.includes(key)) {
+                triggerToast('Already equipped!', 'fa-circle-check');
+                return;
+            }
+
+            if (userProgress.ownedPowerups.length >= MAX_EQUIPPED_ITEMS) {
+                triggerToast('You can only equip 2 items at a time!', 'fa-circle-exclamation');
                 return;
             }
 
             if (userProgress.stars >= conf.cost) {
                 userProgress.stars -= conf.cost;
-                userProgress.ownedPowerup = key;
 
-                // If bought from the pause menu mid-game, activate immediately
                 if (isGameRunning) {
-                    applyOwnedShopPowerup();
+                    activatePowerupKey(key);
+                    saveData();
                     updateHUD();
                     triggerToast(`Activated ${conf.name}!`, conf.icon);
                 } else {
+                    userProgress.ownedPowerups.push(key);
                     saveData();
-                    triggerToast(`Equipped ${conf.name}!`, conf.icon);
+                    triggerToast(`Equipped ${conf.name} (${userProgress.ownedPowerups.length}/${MAX_EQUIPPED_ITEMS})!`, conf.icon);
                 }
 
                 checkMissionsProgress('powerupUnlocked', 1);
