@@ -145,6 +145,12 @@
                         <div id="menuTotalStars" class="font-game text-lg text-red-500">0</div>
                     </div>
                 </div>
+
+                <!-- Equipped Shop Item Pill -->
+                <div id="equippedMenuBadge" class="hidden bg-white/90 px-4 py-1.5 rounded-full shadow border border-emerald-200 flex items-center gap-2 text-xs font-game text-emerald-700">
+                    <i class="fa-solid fa-check-circle text-emerald-500"></i>
+                    <span id="equippedMenuText">Equipped: None</span>
+                </div>
             </div>
 
             <!-- Action Buttons Grid -->
@@ -243,7 +249,7 @@
                 <div class="flex-1 overflow-y-auto space-y-3 pr-1" id="shopItemsContainer"></div>
 
                 <div class="pt-3 border-t border-slate-200 text-center">
-                    <p class="text-[11px] text-slate-500 font-medium">Power-ups spawn automatically during gameplay!</p>
+                    <p class="text-[11px] text-slate-500 font-medium">Equip one power-up at a time from the shop!</p>
                 </div>
             </div>
         </div>
@@ -286,17 +292,13 @@
 
     <!-- GAME ENGINE CODE -->
     <script>
-        const STORAGE_KEY = 'santa_climb_save_v1';
-        const BASE_WORLD_WIDTH = 420;
+        const STORAGE_KEY = 'santa_climb_save_v2';
 
         let audioCtx = null;
         let rocketSynth = null;
         let rocketGain = null;
         let animFrameId = null;
         let pauseStartTime = null;
-        let worldScale = 1;
-        let logicalWidth = BASE_WORLD_WIDTH;
-        let logicalHeight = 700;
 
         function initAudio() {
             if (!audioCtx) {
@@ -394,7 +396,7 @@
         let userProgress = {
             stars: 0,
             highScore: 0,
-            upgrades: { magnet: 0, shield: 0, spring: 0, rocket: 0 },
+            ownedPowerup: null, // Only one single-use shop power-up can be held at a time
             missions: [
                 { id: 'm1', title: 'Collect 15 Presents', req: 15, current: 0, reward: 20, done: false, type: 'stars' },
                 { id: 'm2', title: 'Reach 50 Height Score', req: 50, current: 0, reward: 30, done: false, type: 'score' },
@@ -403,7 +405,7 @@
             achievements: [
                 { id: 'a1', title: 'North Pole Peak', desc: 'Reach a score of 100', req: 100, current: 0, reward: 50, unlocked: false, type: 'score' },
                 { id: 'a2', title: 'Gift Wrapper', desc: 'Collect 100 total presents', req: 100, current: 0, reward: 100, unlocked: false, type: 'totalStars' },
-                { id: 'a3', title: 'Sleigh Upgraded', desc: 'Unlock any powerup in shop', req: 1, current: 0, reward: 40, unlocked: false, type: 'powerupUnlocked' }
+                { id: 'a3', title: 'Sleigh Upgraded', desc: 'Buy a power-up in the shop', req: 1, current: 0, reward: 40, unlocked: false, type: 'powerupUnlocked' }
             ]
         };
 
@@ -413,6 +415,10 @@
                 if (saved) {
                     const parsed = JSON.parse(saved);
                     userProgress = { ...userProgress, ...parsed };
+                    // Ensure legacy saves don't keep multi-upgrades
+                    if (userProgress.upgrades) {
+                        delete userProgress.upgrades;
+                    }
                 }
             } catch(e){}
             updateMenuUI();
@@ -426,10 +432,10 @@
         }
 
         const POWERUPS_CONFIG = {
-            magnet: { name: 'Present Magnet', icon: 'fa-magnet', bgColor: 'bg-red-500', costs: [50, 100, 200], durations: [600, 900, 1200], desc: 'Attracts nearby Christmas presents automatically.' },
-            shield: { name: 'Frost Shield', icon: 'fa-shield-halved', bgColor: 'bg-cyan-500', costs: [60, 120, 250], durations: [1, 1, 2], desc: 'Protects Santa from falling once or twice.' },
-            spring: { name: 'Elf Boots', icon: 'fa-shoe-prints', bgColor: 'bg-emerald-500', costs: [40, 80, 150], durations: [1, 2, 3], desc: 'Allows mid-air double jumps!' },
-            rocket: { name: 'Christmas Tree Boost', icon: 'fa-tree', imgSrc: 'tree.png', bgColor: 'bg-emerald-600', costs: [100, 200, 400], durations: [180, 270, 360], desc: 'Blasts Santa high into the winter sky safely.' }
+            magnet: { name: 'Present Magnet', icon: 'fa-magnet', bgColor: 'bg-red-500', cost: 50, duration: 600, desc: 'Attracts nearby Christmas presents for 10s.' },
+            shield: { name: 'Frost Shield', icon: 'fa-shield-halved', bgColor: 'bg-cyan-500', cost: 60, duration: 1, desc: 'Protects Santa from falling once.' },
+            spring: { name: 'Elf Boots', icon: 'fa-shoe-prints', bgColor: 'bg-emerald-500', cost: 40, duration: 1, desc: 'Grants 1 mid-air double jump!' },
+            rocket: { name: 'Christmas Tree Boost', icon: 'fa-tree', imgSrc: 'tree.png', bgColor: 'bg-emerald-600', cost: 100, duration: 180, desc: 'Blasts Santa high into the winter sky safely.' }
         };
 
         // Christmas Present Color Themes with 3D Shading Palette
@@ -512,15 +518,12 @@
             canvas.width = container.clientWidth;
             canvas.height = container.clientHeight;
 
-            worldScale = Math.max(0.75, canvas.width / BASE_WORLD_WIDTH);
-            logicalWidth = canvas.width / worldScale;
-            logicalHeight = canvas.height / worldScale;
-
-            player.moveSpeed = 5.5;
-
+            const scaleFactor = Math.max(0.85, Math.min(1.3, canvas.width / 420));
+            player.moveSpeed = 5.5 * scaleFactor;
+            
             if (!isGameRunning && player.x === 0) {
-                player.x = logicalWidth / 2 - player.width / 2;
-                player.y = logicalHeight - 150;
+                player.x = canvas.width / 2 - player.width / 2;
+                player.y = canvas.height - 150;
             }
             if (snowLayers.length === 0) {
                 initSnowLayers();
@@ -529,10 +532,9 @@
         window.addEventListener('resize', resizeCanvas);
         window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 150));
 
-        // 3-Layer Depth Snow System in logical coordinates so snow scales with the world
         function initSnowLayers() {
-            const w = logicalWidth || BASE_WORLD_WIDTH;
-            const h = logicalHeight || 700;
+            const w = canvas.width || window.innerWidth;
+            const h = canvas.height || window.innerHeight;
 
             const configs = [
                 { count: 75, minR: 0.9, maxR: 1.7, minSpeed: 0.45, maxSpeed: 0.95, drift: 0.25, alphaMin: 0.35, alphaMax: 0.6 },
@@ -570,12 +572,12 @@
                     f.phase += f.phaseSpeed;
                     f.x += Math.sin(f.phase) * f.driftAmp;
 
-                    if (f.y > logicalHeight + 10) {
+                    if (f.y > canvas.height + 10) {
                         f.y = -10;
-                        f.x = Math.random() * logicalWidth;
+                        f.x = Math.random() * canvas.width;
                     }
-                    if (f.x > logicalWidth + 10) f.x = -10;
-                    if (f.x < -10) f.x = logicalWidth + 10;
+                    if (f.x > canvas.width + 10) f.x = -10;
+                    if (f.x < -10) f.x = canvas.width + 10;
                 }
 
                 ctx.fillStyle = `rgba(255, 255, 255, ${f.alpha})`;
@@ -584,6 +586,20 @@
                 ctx.fill();
             }
             ctx.restore();
+        }
+
+        function applyOwnedShopPowerup() {
+            const owned = userProgress.ownedPowerup;
+            if (!owned) return;
+
+            if (owned === 'magnet') activePowerups.magnetTimer = POWERUPS_CONFIG.magnet.duration;
+            if (owned === 'shield') activePowerups.shieldHits = POWERUPS_CONFIG.shield.duration;
+            if (owned === 'spring') activePowerups.doubleJumps = POWERUPS_CONFIG.spring.duration;
+            if (owned === 'rocket') activePowerups.rocketTimer = POWERUPS_CONFIG.rocket.duration;
+
+            // Consume the single-use item once activated for the run
+            userProgress.ownedPowerup = null;
+            saveData();
         }
 
         function initGame() {
@@ -600,17 +616,19 @@
             keys.right = false;
             pauseStartTime = null;
 
-            player.x = logicalWidth / 2 - player.width / 2;
-            player.y = logicalHeight - 150;
+            player.x = canvas.width / 2 - player.width / 2;
+            player.y = canvas.height - 150;
             player.vx = 0;
             player.vy = player.jumpStrength;
 
             activePowerups = {
                 magnetTimer: 0,
-                shieldHits: userProgress.upgrades.shield > 0 ? POWERUPS_CONFIG.shield.durations[userProgress.upgrades.shield - 1] : 0,
-                doubleJumps: userProgress.upgrades.spring > 0 ? POWERUPS_CONFIG.spring.durations[userProgress.upgrades.spring - 1] : 0,
+                shieldHits: 0,
+                doubleJumps: 0,
                 rocketTimer: 0
             };
+
+            applyOwnedShopPowerup();
 
             platforms = [];
             starsList = [];
@@ -620,24 +638,27 @@
 
             for (let i = 0; i < 5; i++) {
                 clouds.push({
-                    x: Math.random() * logicalWidth,
-                    y: Math.random() * logicalHeight,
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
                     size: 16 + Math.random() * 16,
                     speed: 0.2 + Math.random() * 0.3
                 });
             }
 
-            const initialPlatWidth = Math.min(130, Math.max(90, logicalWidth * 0.22));
+            const initialPlatWidth = Math.min(130, Math.max(90, canvas.width * 0.22));
             platforms.push({
-                x: logicalWidth / 2 - initialPlatWidth / 2,
-                y: logicalHeight - 80,
+                x: canvas.width / 2 - initialPlatWidth / 2,
+                y: canvas.height - 80,
+                originX: canvas.width / 2 - initialPlatWidth / 2,
+                originY: canvas.height - 80,
                 width: initialPlatWidth, height: 22,
                 type: 'standard',
-                hits: 0, broken: false
+                hits: 0, broken: false,
+                respawnAt: 0, respawnAlpha: 1
             });
 
-            let nextY = logicalHeight - 180;
-            while (nextY > -logicalHeight) {
+            let nextY = canvas.height - 180;
+            while (nextY > -canvas.height) {
                 spawnPlatformAt(nextY);
                 nextY -= 65 + Math.random() * 25;
             }
@@ -647,19 +668,19 @@
 
         function spawnPlatformAt(yPos) {
             const thousands = Math.floor(gameScore / 1000);
-            const baseWidth = Math.min(120, Math.max(85, logicalWidth * 0.22));
+            const baseWidth = Math.min(120, Math.max(85, canvas.width * 0.22));
             const minMultiplier = (player.width * 1.1) / baseWidth; 
             const shrinkMultiplier = Math.max(minMultiplier, 1 - (thousands * 0.05));
             const width = baseWidth * shrinkMultiplier;
 
-            const xPos = Math.random() * (logicalWidth - width);
+            const xPos = Math.random() * (canvas.width - width);
             
             let pType = 'standard';
             const rand = Math.random();
             if (rand < 0.28) pType = 'moving';
             else if (rand < 0.48) pType = 'fragile';
 
-            const moveSpeedVal = (Math.random() > 0.5 ? 2 : -2);
+            const moveSpeedVal = (canvas.width / 400) * (Math.random() > 0.5 ? 2 : -2);
 
             const platform = {
                 x: xPos, y: yPos,
@@ -699,6 +720,27 @@
             }
         }
 
+        function spawnSafetyLandingPlatform() {
+            const platWidth = Math.min(130, Math.max(95, canvas.width * 0.24));
+            const platX = Math.max(10, Math.min(canvas.width - platWidth - 10, player.x + player.width / 2 - platWidth / 2));
+            const platY = player.y + player.height + 65;
+
+            platforms.push({
+                x: platX,
+                y: platY,
+                originX: platX,
+                originY: platY,
+                width: platWidth,
+                height: 22,
+                type: 'standard',
+                vx: 0,
+                hits: 0,
+                broken: false,
+                respawnAt: 0,
+                respawnAlpha: 1
+            });
+        }
+
         function update() {
             if (!isGameRunning || isPaused) return;
 
@@ -707,6 +749,11 @@
                 player.vy = -14;
                 createParticles(player.x + player.width / 2, player.y + player.height, '#f59e0b', 2);
                 updateRocketSound(true);
+
+                // When the tree boost ends, guarantee a safe platform underneath Santa
+                if (activePowerups.rocketTimer === 0) {
+                    spawnSafetyLandingPlatform();
+                }
             } else {
                 updateRocketSound(false);
                 player.vy += player.gravity;
@@ -724,12 +771,12 @@
 
             player.x += player.vx;
 
-            if (player.x < -player.width) player.x = logicalWidth;
-            if (player.x > logicalWidth) player.x = -player.width;
+            if (player.x < -player.width) player.x = canvas.width;
+            if (player.x > canvas.width) player.x = -player.width;
 
             player.y += player.vy;
 
-            const targetCamY = logicalHeight * 0.4 - player.y;
+            const targetCamY = canvas.height * 0.4 - player.y;
             if (targetCamY > cameraY) {
                 cameraY += (targetCamY - cameraY) * 0.1;
                 const currentHeight = Math.floor(cameraY / 10);
@@ -777,7 +824,7 @@
             platforms.forEach(p => {
                 if (p.type === 'moving') {
                     p.x += p.vx;
-                    if (p.x <= 0 || p.x + p.width >= logicalWidth) p.vx *= -1;
+                    if (p.x <= 0 || p.x + p.width >= canvas.width) p.vx *= -1;
                 }
                 if (p.type === 'fragile') {
                     if (p.broken && p.respawnAt > 0 && now >= p.respawnAt) {
@@ -820,7 +867,8 @@
                         
                         s.collected = true;
                         playCoinSound();
-                        const gained = 1 * comboMultiplier;
+                        // Each present scores exactly 1
+                        const gained = 1;
                         sessionStars += gained;
                         userProgress.stars += gained;
                         createParticles(s.x + 12, s.y + 12, s.style.top, 8);
@@ -839,10 +887,10 @@
                     player.y + player.height > item.y) {
                     
                     item.collected = true;
-                    if (item.type === 'magnet') activePowerups.magnetTimer = POWERUPS_CONFIG.magnet.durations[userProgress.upgrades.magnet || 0];
-                    if (item.type === 'rocket') activePowerups.rocketTimer = POWERUPS_CONFIG.rocket.durations[userProgress.upgrades.rocket || 0];
+                    if (item.type === 'magnet') activePowerups.magnetTimer = POWERUPS_CONFIG.magnet.duration;
+                    if (item.type === 'rocket') activePowerups.rocketTimer = POWERUPS_CONFIG.rocket.duration;
                     playCoinSound();
-                    triggerToast(`Activated ${item.type.toUpperCase()}!`, item.type === 'rocket' ? 'fa-tree' : 'fa-bolt');
+                    triggerToast(`Activated ${item.type === 'rocket' ? 'TREE BOOST' : 'MAGNET'}!`, item.type === 'rocket' ? 'fa-tree' : 'fa-bolt');
                 }
             });
 
@@ -854,13 +902,17 @@
                 }
             }
 
-            const highestP = platforms.reduce((min, p) => p.y < min ? p.y : min, logicalHeight);
-            if (highestP > -cameraY - 200) {
-                spawnPlatformAt(highestP - (60 + Math.random() * 30));
+            // Use a while loop so platforms always fill the sky ahead even during fast rocket boosts
+            let highestP = platforms.reduce((min, p) => p.y < min ? p.y : min, canvas.height);
+            while (highestP > -cameraY - 300) {
+                const nextY = highestP - (60 + Math.random() * 30);
+                spawnPlatformAt(nextY);
+                highestP = nextY;
             }
 
-            platforms = platforms.filter(p => p.y < -cameraY + logicalHeight + 100);
-            starsList = starsList.filter(s => s.y < -cameraY + logicalHeight + 100);
+            platforms = platforms.filter(p => p.y < -cameraY + canvas.height + 100);
+            starsList = starsList.filter(s => !s.collected && s.y < -cameraY + canvas.height + 100);
+            powerupItems = powerupItems.filter(item => !item.collected && item.y < -cameraY + canvas.height + 100);
 
             particles.forEach((pt, idx) => {
                 pt.x += pt.vx;
@@ -869,10 +921,11 @@
                 if (pt.alpha <= 0) particles.splice(idx, 1);
             });
 
-            if (player.y > -cameraY + logicalHeight + 50) {
+            if (player.y > -cameraY + canvas.height + 50) {
                 if (activePowerups.shieldHits > 0) {
                     activePowerups.shieldHits--;
                     player.vy = player.jumpStrength * 1.3;
+                    spawnSafetyLandingPlatform();
                     triggerToast('Frost Shield Saved You!', 'fa-shield-halved');
                 } else {
                     handleGameOver();
@@ -1089,9 +1142,6 @@
         function render() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            ctx.save();
-            ctx.scale(worldScale, worldScale);
-
             // 1. Far distant snow (tiny slow dots)
             updateAndDrawSnow(0);
 
@@ -1099,7 +1149,7 @@
             clouds.forEach(c => {
                 if (!isPaused) {
                     c.x += c.speed;
-                    if (c.x > logicalWidth + 60) {
+                    if (c.x > canvas.width + 60) {
                         c.x = -60;
                     }
                 }
@@ -1140,6 +1190,7 @@
                 ctx.restore();
             });
 
+            // Draw rotating 3D Christmas presents
             starsList.forEach(s => {
                 if (!s.collected) {
                     drawPresent(s);
@@ -1220,8 +1271,6 @@
             // 4. Foreground close snow (large fast-falling snowflakes)
             updateAndDrawSnow(2);
 
-            ctx.restore();
-
             if (isGameRunning && !isPaused) {
                 update();
                 animFrameId = requestAnimationFrame(render);
@@ -1265,6 +1314,16 @@
             document.getElementById('menuHighScore').innerText = userProgress.highScore;
             document.getElementById('menuTotalStars').innerText = userProgress.stars;
             document.getElementById('shopStarBalance').innerText = userProgress.stars;
+
+            const equippedBadge = document.getElementById('equippedMenuBadge');
+            const equippedText = document.getElementById('equippedMenuText');
+            if (userProgress.ownedPowerup && POWERUPS_CONFIG[userProgress.ownedPowerup]) {
+                equippedBadge.classList.remove('hidden');
+                equippedText.innerText = `Ready: ${POWERUPS_CONFIG[userProgress.ownedPowerup].name}`;
+            } else {
+                equippedBadge.classList.add('hidden');
+            }
+
             renderShopItems();
             renderMissions();
         }
@@ -1273,15 +1332,32 @@
             const container = document.getElementById('shopItemsContainer');
             container.innerHTML = '';
 
+            const ownedKey = userProgress.ownedPowerup;
+
             Object.keys(POWERUPS_CONFIG).forEach(key => {
                 const conf = POWERUPS_CONFIG[key];
-                const currentLevel = userProgress.upgrades[key] || 0;
-                const isMax = currentLevel >= conf.costs.length;
-                const cost = isMax ? 'MAX' : conf.costs[currentLevel];
+                const isThisEquipped = ownedKey === key;
+                const isAnotherEquipped = ownedKey !== null && ownedKey !== key;
+                const canAfford = userProgress.stars >= conf.cost;
+                const isDisabled = isThisEquipped || isAnotherEquipped || !canAfford;
+
                 const boxSize = conf.imgSrc ? 'w-20 h-20' : 'w-12 h-12';
                 const visualHtml = conf.imgSrc
                     ? `<img src="${conf.imgSrc}" alt="${conf.name}" class="w-16 h-20 object-contain" onerror="this.outerHTML='<i class=\\'fa-solid ${conf.icon}\\'></i>'">`
                     : `<i class="fa-solid ${conf.icon}"></i>`;
+
+                let btnLabel = `<i class="fa-solid fa-gift"></i> ${conf.cost}`;
+                let btnClasses = 'bg-red-500 hover:bg-red-600 text-white shadow-md';
+
+                if (isThisEquipped) {
+                    btnLabel = `<i class="fa-solid fa-check"></i> EQUIPPED`;
+                    btnClasses = 'bg-emerald-500 text-white shadow-md';
+                } else if (isAnotherEquipped) {
+                    btnLabel = `1 AT A TIME`;
+                    btnClasses = 'bg-slate-200 text-slate-400';
+                } else if (!canAfford) {
+                    btnClasses = 'bg-red-500 text-white opacity-50';
+                }
 
                 const card = document.createElement('div');
                 card.className = 'bg-white/90 p-3.5 rounded-2xl shadow border border-slate-100 flex items-center justify-between gap-3';
@@ -1293,16 +1369,11 @@
                         <div>
                             <div class="font-game text-slate-800 text-sm">${conf.name}</div>
                             <div class="text-[11px] text-slate-500 font-medium leading-tight">${conf.desc}</div>
-                            <div class="flex gap-1 mt-1">
-                                ${[1,2,3].map(lvl => `
-                                    <div class="w-4 h-1.5 rounded-full ${lvl <= currentLevel ? 'bg-red-500' : 'bg-slate-200'}"></div>
-                                `).join('')}
-                            </div>
                         </div>
                     </div>
-                    <button onclick="buyPowerup('${key}')" ${isMax || userProgress.stars < cost ? 'disabled' : ''} 
-                            class="btn-bounce px-3 py-2 rounded-xl font-game text-xs flex items-center gap-1 ${isMax ? 'bg-slate-200 text-slate-400' : 'bg-red-500 hover:bg-red-600 text-white shadow-md disabled:opacity-50'}">
-                        ${isMax ? 'MAXED' : `<i class="fa-solid fa-gift"></i> ${cost}`}
+                    <button onclick="buyPowerup('${key}')" ${isDisabled ? 'disabled' : ''} 
+                            class="btn-bounce shrink-0 px-3 py-2 rounded-xl font-game text-xs flex items-center gap-1 ${btnClasses}">
+                        ${btnLabel}
                     </button>
                 `;
                 container.appendChild(card);
@@ -1311,15 +1382,26 @@
 
         function buyPowerup(key) {
             const conf = POWERUPS_CONFIG[key];
-            const currentLevel = userProgress.upgrades[key] || 0;
-            if (currentLevel >= conf.costs.length) return;
+            if (!conf) return;
+            if (userProgress.ownedPowerup !== null) {
+                triggerToast('Use your equipped item first!', 'fa-circle-exclamation');
+                return;
+            }
 
-            const cost = conf.costs[currentLevel];
-            if (userProgress.stars >= cost) {
-                userProgress.stars -= cost;
-                userProgress.upgrades[key] = currentLevel + 1;
-                saveData();
-                triggerToast(`Upgraded ${conf.name}!`, conf.icon);
+            if (userProgress.stars >= conf.cost) {
+                userProgress.stars -= conf.cost;
+                userProgress.ownedPowerup = key;
+
+                // If bought from the pause menu mid-game, activate immediately
+                if (isGameRunning) {
+                    applyOwnedShopPowerup();
+                    updateHUD();
+                    triggerToast(`Activated ${conf.name}!`, conf.icon);
+                } else {
+                    saveData();
+                    triggerToast(`Equipped ${conf.name}!`, conf.icon);
+                }
+
                 checkMissionsProgress('powerupUnlocked', 1);
             }
         }
@@ -1490,13 +1572,13 @@
                 keys.left = false;
                 keys.right = false;
 
-                player.x = logicalWidth / 2 - player.width / 2;
-                player.y = -cameraY + logicalHeight * 0.45;
+                player.x = canvas.width / 2 - player.width / 2;
+                player.y = -cameraY + canvas.height * 0.45;
                 player.vx = 0;
                 player.vy = player.jumpStrength;
 
-                const platWidth = Math.min(150, Math.max(115, logicalWidth * 0.28));
-                const platX = logicalWidth / 2 - platWidth / 2;
+                const platWidth = Math.min(150, Math.max(115, canvas.width * 0.28));
+                const platX = canvas.width / 2 - platWidth / 2;
                 const platY = player.y + player.height + 24;
                 platforms.push({
                     x: platX,
